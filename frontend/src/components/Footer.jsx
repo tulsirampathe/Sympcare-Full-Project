@@ -25,9 +25,15 @@ const Footer = () => {
         </div>
 
         <div>
+<<<<<<< HEAD
           <p className="text-xl font-medium mb-5">GET IN TOUCH</p>
           <ul className="flex flex-col gap-2 text-gray-600">
             <li>+91 7692057868</li>
+=======
+          <p className='text-xl font-medium mb-5'>GET IN TOUCH</p>
+          <ul className='flex flex-col gap-2 text-gray-600'>
+            <li>+1-212-459-7890</li>
+>>>>>>> ff48a73d192ee82b83cc68b95594afb826565736
             <li>sympcare@gmail.com</li>
           </ul>
         </div>
@@ -35,9 +41,13 @@ const Footer = () => {
 
       <div>
         <hr />
+<<<<<<< HEAD
         <p className="py-5 text-sm text-center">
           Copyright 2025 @ SympCare - All Right Reserved.
         </p>
+=======
+        <p className='py-5 text-sm text-center'>Copyright 2025 @ Sympcare.com - All Right Reserved.</p>
+>>>>>>> ff48a73d192ee82b83cc68b95594afb826565736
       </div>
     </div>
   );
