@@ -3,85 +3,93 @@ import { assets } from "../assets/assets";
 
 const About = () => {
   return (
-    <div className="px-4 md:px-10 lg:px-20">
-      <div className="text-center text-2xl pt-10 text-[#707070]">
-        <p>
-          ABOUT <span className="text-gray-700 font-semibold">US</span>
+    <div className="px-6 md:px-12 lg:px-24">
+      {/* Section Title */}
+      <div className="text-center">
+        <h2 className="text-3xl font-bold text-gray-800">
+          ABOUT <span className="text-primary">US</span>
+        </h2>
+        <p className="text-gray-600 mt-2">
+          Your intelligent healthcare assistant
         </p>
       </div>
 
-      <div className="my-10 flex flex-col md:flex-row items-center gap-12">
-        {/* Improved Image Container */}
-        <div className="flex justify-center md:w-1/2">
+      {/* Content Section */}
+      <div className="mt-12 flex flex-col md:flex-row items-center gap-12">
+        {/* Image Section */}
+        <div className="md:w-1/2 flex justify-center">
           <img
-            className="w-full max-w-md rounded-lg shadow-lg object-contain md:object-cover"
+            className="w-full max-w-md bg-primary rounded-lg shadow-xl hover:scale-105 transition-transform duration-300"
             src={assets.about_image}
             alt="About SympCare"
           />
         </div>
 
         {/* Text Content */}
-        <div className="flex flex-col justify-center gap-6 md:w-1/2 text-sm text-gray-600">
-          <b>
-            Welcome to SympCare, your intelligent healthcare assistant dedicated
-            to simplifying patient care and medical management.
-          </b>
+        <div className="md:w-1/2 text-gray-700 space-y-6">
+          <h3 className="text-2xl font-semibold text-gray-800">
+            Welcome to <span className="text-primary">SympCare</span>
+          </h3>
           <p>
-            At SympCare, we understand the challenges patients face when it
-            comes to assessing symptoms, booking appointments, and staying on
-            top of their health. Our AI-driven platform streamlines healthcare
-            access by offering real-time symptom analysis, smart appointment
-            scheduling, and personalized health insights.
+            We simplify patient care and medical management through AI-driven
+            real-time symptom analysis, smart appointment scheduling, and
+            personalized health insights.
           </p>
-          <b className="text-gray-800">Empowering Smarter Healthcare</b>
-          <p>
-            SympCare integrates advanced AI and machine learning to deliver a
-            seamless healthcare experience. Whether you're a patient looking for
-            quick symptom assessment or a doctor managing appointments, our
-            platform ensures efficiency, accuracy, and convenience. With
-            real-time data synchronization and intelligent health
-            recommendations, we bridge the gap between patients and healthcare
-            providers.
-          </p>
-          <b className="text-gray-800">Our Vision</b>
-          <p>
-            Our vision at SympCare is to revolutionize healthcare accessibility
-            by combining AI-driven diagnostics with intuitive patient care
-            solutions. We aim to enhance healthcare efficiency, reduce wait
-            times, and provide proactive health management—ensuring that every
-            individual gets the right care at the right time.
-          </p>
+          <div className="space-y-4">
+            <div>
+              <h4 className="font-semibold text-gray-800">
+                Empowering Smarter Healthcare
+              </h4>
+              <p>
+                Our platform integrates AI and machine learning to streamline
+                healthcare access, helping both patients and healthcare
+                providers.
+              </p>
+            </div>
+            <div>
+              <h4 className="font-semibold text-gray-800">Our Vision</h4>
+              <p>
+                We aim to revolutionize healthcare accessibility with AI-driven
+                diagnostics, reducing wait times and enhancing proactive health
+                management.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className="text-xl my-4">
-        <p>
-          WHY <span className="text-gray-700 font-semibold">CHOOSE US</span>
-        </p>
+      {/* Why Choose Us Section */}
+      <div className="text-center mt-16">
+        <h2 className="text-3xl font-bold text-gray-800">
+          WHY <span className="text-primary">CHOOSE US?</span>
+        </h2>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-6 mb-20">
-        <div className="border px-10 md:px-16 py-8 sm:py-16 flex flex-col gap-5 text-[15px] hover:bg-primary hover:text-white transition-all duration-300 text-gray-600 cursor-pointer">
-          <b>EFFICIENCY:</b>
-          <p>
-            Streamlined appointment scheduling that fits into your busy
-            lifestyle.
-          </p>
-        </div>
-        <div className="border px-10 md:px-16 py-8 sm:py-16 flex flex-col gap-5 text-[15px] hover:bg-primary hover:text-white transition-all duration-300 text-gray-600 cursor-pointer">
-          <b>CONVENIENCE:</b>
-          <p>
-            Access to a network of trusted healthcare professionals in your
-            area.
-          </p>
-        </div>
-        <div className="border px-10 md:px-16 py-8 sm:py-16 flex flex-col gap-5 text-[15px] hover:bg-primary hover:text-white transition-all duration-300 text-gray-600 cursor-pointer">
-          <b>PERSONALIZATION:</b>
-          <p>
-            Tailored recommendations and reminders to help you stay on top of
-            your health.
-          </p>
-        </div>
+      <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+        {[
+          {
+            title: "EFFICIENCY",
+            text: "Streamlined appointment scheduling for your busy lifestyle.",
+          },
+          {
+            title: "CONVENIENCE",
+            text: "Access trusted healthcare professionals in your area.",
+          },
+          {
+            title: "PERSONALIZATION",
+            text: "Tailored recommendations and health reminders.",
+          },
+        ].map((item, index) => (
+          <div
+            key={index}
+            className="border p-8 rounded-lg text-center bg-white shadow-md hover:bg-primary hover:text-white transition-all duration-300 cursor-pointer"
+          >
+            <h3 className="text-xl font-semibold">{item.title}</h3>
+            <p className="mt-2 text-gray-600 group-hover:text-white">
+              {item.text}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );
