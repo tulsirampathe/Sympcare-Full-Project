@@ -6,7 +6,6 @@ const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { sender: "bot", text: "👋 Welcome to SympCare AI Healthcare!" },
-    { sender: "bot", text: "I’m your virtual assistant. I can help with symptom assessment, appointment booking, and more!" },
     { sender: "bot", text: "Hi! How can I help you?" },
     { sender: "bot", text: "1️⃣ Skin Assessment\n2️⃣ Symptom Assessment\n3️⃣ Appointment\n4️⃣ Mental Health" },
   ]);
