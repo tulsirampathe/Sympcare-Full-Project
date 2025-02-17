@@ -1,17 +1,20 @@
 import React, { useState, useRef, useEffect } from "react";
 import { assets } from "../assets/assets";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     { sender: "bot", text: "👋 Welcome to SympCare AI Healthcare!" },
+    { sender: "bot", text: "I’m your virtual assistant. I can help with symptom assessment, appointment booking, and more!" },
     { sender: "bot", text: "Hi! How can I help you?" },
     { sender: "bot", text: "1️⃣ Skin Assessment\n2️⃣ Symptom Assessment\n3️⃣ Appointment\n4️⃣ Mental Health" },
   ]);
   const [input, setInput] = useState("");
   const [showPopup, setShowPopup] = useState(true);
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate();
 
   const toggleChat = () => {
     setIsOpen((prev) => !prev);
@@ -23,6 +26,10 @@ const Chatbot = () => {
     const newMessage = { sender: "user", text: message };
     setMessages((prev) => [...prev, newMessage]);
     
+    if (message.toLowerCase().includes("skin assessment")) {
+      navigate("/skin");
+    }
+
     setTimeout(() => {
       setMessages((prev) => [...prev, { sender: "bot", text: "I have noted your request. Can you please provide more details?" }]);
     }, 1000);
