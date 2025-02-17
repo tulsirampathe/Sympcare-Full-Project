@@ -29,6 +29,9 @@ const Chatbot = () => {
     if (message.toLowerCase().includes("skin assessment")) {
       navigate("/skin");
     }
+    if (message.toLowerCase().includes("Symptom assessment")) {
+      navigate("/predict");
+    }
 
     setTimeout(() => {
       setMessages((prev) => [...prev, { sender: "bot", text: "I have noted your request. Can you please provide more details?" }]);

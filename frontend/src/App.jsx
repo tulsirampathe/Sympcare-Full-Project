@@ -15,6 +15,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Verify from "./pages/Verify";
 import Chatbot from "./components/Chatbot";
 import SkinDiseaseDetector from "./pages/Skindiseas";
+import Prediction from "./pages/Sas"; 
+
 
 const App = () => {
   return (
@@ -33,6 +35,8 @@ const App = () => {
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/skin" element={<SkinDiseaseDetector />} />
+        <Route path="/predict" element={<Prediction />} />
+
 
 
       </Routes>
