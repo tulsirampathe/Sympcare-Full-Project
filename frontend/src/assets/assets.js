@@ -32,6 +32,7 @@ import doc12 from "./doc12.png";
 import doc13 from "./doc13.png";
 import doc14 from "./doc14.png";
 import doc15 from "./doc15.png";
+import Skin_Disease_img from "./Skin_Disease_img.png";
 import Dermatologist from "./Dermatologist.svg";
 import Gastroenterologist from "./Gastroenterologist.svg";
 import General_physician from "./General_physician.svg";
@@ -58,6 +59,7 @@ export const assets = {
   upload_icon,
   stripe_logo,
   razorpay_logo,
+  Skin_Disease_img,
 };
 
 export const specialityData = [

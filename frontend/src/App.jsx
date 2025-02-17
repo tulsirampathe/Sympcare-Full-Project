@@ -17,7 +17,7 @@ import Chatbot from "./components/Chatbot";
 
 import Services from "./pages/Services";
 
-import SkinDiseaseDetector from "./pages/Skindiseas";
+import SkinDiseaseDetector from "./pages/SkinDiseaseDetector";
 
 import Prediction from "./pages/Sas"; 
 
@@ -41,7 +41,7 @@ const App = () => {
         <Route path="/my-appointments" element={<MyAppointments />} />
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/verify" element={<Verify />} />
-        <Route path="/skin" element={<SkinDiseaseDetector />} />
+        <Route path="/skin-detection" element={<SkinDiseaseDetector />} />
         <Route path="/predict" element={<Prediction />} />
 
 
