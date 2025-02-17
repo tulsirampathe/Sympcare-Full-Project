@@ -1,28 +1,26 @@
 import React from "react";
-import Navbar from "./components/Navbar";
-import { Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Doctors from "./pages/Doctors";
-import Login from "./pages/Login";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
-import Appointment from "./pages/Appointment";
-import MyAppointments from "./pages/MyAppointments";
-import MyProfile from "./pages/MyProfile";
-import Footer from "./components/Footer";
+import { Route, Routes } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import Verify from "./pages/Verify";
 import Chatbot from "./components/Chatbot";
+import Footer from "./components/Footer";
+import Navbar from "./components/Navbar";
+import About from "./pages/About";
+import Appointment from "./pages/Appointment";
+import Contact from "./pages/Contact";
+import Doctors from "./pages/Doctors";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import MyAppointments from "./pages/MyAppointments";
+import MyProfile from "./pages/MyProfile";
+import Verify from "./pages/Verify";
 
 import Services from "./pages/Services";
 
 import SkinDiseaseDetector from "./pages/SkinDiseaseDetector";
 
-import Prediction from "./pages/Sas"; 
-
-
-
+import SymptomAnalysis from "./pages/SymptomAnalysis ";
+import MentalHealthAssessment from "./pages/MentalHealthAssessment";
 
 const App = () => {
   return (
@@ -42,10 +40,8 @@ const App = () => {
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/skin-detection" element={<SkinDiseaseDetector />} />
-        <Route path="/predict" element={<Prediction />} />
-
-
-
+        <Route path="/symptom-analysis" element={<SymptomAnalysis />} />
+        <Route path="/health-assessment" element={<MentalHealthAssessment />} />
       </Routes>
       <Chatbot />
       <Footer />

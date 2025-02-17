@@ -21,7 +21,7 @@ const Services = () => {
       title: "Comprehensive Health Assessments",
       text: "Get accurate symptom analysis and initial diagnosis guidance.",
       icon: <FaStethoscope className="text-4xl text-green-600" />,
-      route: "/health-assessment",
+      route: "/symptom-analysis",
     },
     {
       title: "Advanced Skin Disease Detection",
@@ -33,7 +33,7 @@ const Services = () => {
       title: "Mental Health & Wellbeing Support",
       text: "Confidential mental health assessment and professional recommendations.",
       icon: <FaBrain className="text-4xl text-purple-600" />,
-      route: "/mental-health",
+      route: "/health-assessment",
     },
   ];
 
@@ -55,7 +55,10 @@ const Services = () => {
         {services.map((service, index) => (
           <div
             key={index}
-            onClick={() => {navigate(service.route); scrollTo(0, 0)}}
+            onClick={() => {
+              navigate(service.route);
+              scrollTo(0, 0);
+            }}
             className="flex flex-col items-center p-8 bg-white shadow-lg rounded-lg cursor-pointer transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
           >
             <div className="mb-6">{service.icon}</div>
