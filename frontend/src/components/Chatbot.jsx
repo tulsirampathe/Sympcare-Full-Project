@@ -82,10 +82,11 @@ const Chatbot = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  // Update popup message every second
   useEffect(() => {
     const interval = setInterval(() => {
       setPopupMessage("Hi! Need assistance? Click Me");
-    }, 1000); // Update every second
+    }, 10000); // Update every second
 
     return () => clearInterval(interval);
   }, []);
@@ -107,7 +108,7 @@ const Chatbot = () => {
           className="absolute bottom-40 right-4 bg-white shadow-lg p-3 rounded-lg flex items-center space-x-2"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+          exit={{ opacity: 0, y: 30 }}
         >
           <FaComments className="text-gray-500" />
           <p>{popupMessage}</p>
