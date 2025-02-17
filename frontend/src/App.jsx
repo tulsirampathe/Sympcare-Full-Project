@@ -17,6 +17,8 @@ import Chatbot from "./components/Chatbot";
 import Services from "./pages/Services";
 import SkinDiseaseDetector from "./pages/Skindiseas";
 
+import Prediction from "./pages/Sas"; 
+
 const App = () => {
   return (
     <div className="mx-4 sm:mx-[10%]">
@@ -35,6 +37,8 @@ const App = () => {
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/verify" element={<Verify />} />
         <Route path="/skin" element={<SkinDiseaseDetector />} />
+        <Route path="/predict" element={<Prediction />} />
+
 
 
       </Routes>
