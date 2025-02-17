@@ -25,11 +25,13 @@ const Chatbot = () => {
     if (!message.trim()) return;
     const newMessage = { sender: "user", text: message };
     setMessages((prev) => [...prev, newMessage]);
-    
-    if (message.toLowerCase().includes("skin assessment")) {
+    setInput(""); // Clear input after sending a message
+
+    const lowerCaseMessage = message.toLowerCase();
+
+    if (lowerCaseMessage.includes("skin assessment")) {
       navigate("/skin");
-    }
-    if (message.toLowerCase().includes("Symptom assessment")) {
+    } else if (lowerCaseMessage.includes("symptom assessment")) {
       navigate("/predict");
     }
 
