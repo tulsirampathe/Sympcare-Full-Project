@@ -13,6 +13,7 @@ const Chatbot = () => {
   ]);
   const [input, setInput] = useState("");
   const [showPopup, setShowPopup] = useState(true);
+  const [imageFile, setImageFile] = useState(null);
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
 
@@ -21,27 +22,52 @@ const Chatbot = () => {
     setShowPopup(false);
   };
 
-  const sendMessage = (message) => {
-    if (!message.trim()) return;
-    const newMessage = { sender: "user", text: message };
-    setMessages((prev) => [...prev, newMessage]);
-    setInput(""); // Clear input after sending a message
+  const sendMessage = async (message) => {
+    if (!message.trim() && !imageFile) return;
 
-    const lowerCaseMessage = message.toLowerCase();
+    setMessages((prev) => [...prev, { sender: "user", text: message }]);
+    setInput("");
 
-    if (lowerCaseMessage.includes("skin assessment")) {
+    if (message.toLowerCase().includes("skin assessment")) {
+      setImageFile(null);
       navigate("/skin");
-    } else if (lowerCaseMessage.includes("symptom assessment")) {
-      navigate("/predict");
+      return;
     }
 
-    setTimeout(() => {
-      setMessages((prev) => [...prev, { sender: "bot", text: "I have noted your request. Can you please provide more details?" }]);
-    }, 1000);
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append("image", imageFile);
+      try {
+        const response = await fetch("http://127.0.0.1:5000/predict", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setMessages((prev) => [...prev, { sender: "bot", text: `Predicted Disease: ${data.prediction}` }]);
+        } else {
+          setMessages((prev) => [...prev, { sender: "bot", text: `Error: ${data.error}` }]);
+        }
+      } catch (error) {
+        setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
+      }
+    } else {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Please upload an image for prediction." }]);
+    }
+
+    setImageFile(null);
   };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter") sendMessage(input);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setMessages((prev) => [...prev, { sender: "user", text: `Image uploaded: ${file.name}` }]);
+    }
   };
 
   useEffect(() => {
@@ -66,7 +92,6 @@ const Chatbot = () => {
             <h3 className="text-white text-lg font-bold">SympCare AI Assistant</h3>
             <button onClick={toggleChat} className="text-white text-2xl">&times;</button>
           </div>
-
           <div className="p-4 h-64 overflow-y-auto bg-gray-100 space-y-2">
             {messages.map((msg, index) => (
               <div key={index} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
@@ -82,7 +107,6 @@ const Chatbot = () => {
             ))}
             <div ref={messagesEndRef} />
           </div>
-
           <div className="flex border-t p-2 bg-white">
             <input
               type="text"
@@ -92,6 +116,8 @@ const Chatbot = () => {
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
             />
+            <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" id="file-upload" />
+            <label htmlFor="file-upload" className="cursor-pointer bg-gray-200 px-4 py-2 border border-gray-300">📷</label>
             <button
               onClick={() => sendMessage(input)}
               className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition"
