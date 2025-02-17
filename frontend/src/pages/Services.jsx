@@ -34,10 +34,10 @@ const Services = () => {
     <section className="gap-4 py-16 px-6">
       {/* Heading */}
       <div className="text-center mb-12">
-        <h2 className="text-4xl font-bold text-gray-800">
-          Our <span className="text-blue-600">Healthcare Services</span>
-        </h2>
-        <p className="text-gray-600 mt-2 text-lg">
+        <h1 className="text-3xl font-medium">
+          Our <span className="text-primary">Healthcare Services</span>
+        </h1>
+        <p className="sm:w-1/3  text-sm">
           Delivering top-notch medical care and support to enhance your
           wellbeing.
         </p>
