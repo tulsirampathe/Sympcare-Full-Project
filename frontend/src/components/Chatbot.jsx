@@ -23,29 +23,25 @@ const Chatbot = () => {
 
   const sendMessage = (message) => {
     if (!message.trim()) return;
-
     const newMessage = { sender: "user", text: message };
     setMessages((prev) => [...prev, newMessage]);
+    setInput(""); // Clear input after sending a message
 
-    if (message.toLowerCase() === "1" || message.toLowerCase().includes("skin assessment")) {
-      window.location.href = "http://127.0.0.1:5000/skin-disease"; // Redirect to Flask backend
-      return;
+    const lowerCaseMessage = message.toLowerCase();
+
+    if (lowerCaseMessage.includes("skin assessment")) {
+      navigate("/skin");
+    } else if (lowerCaseMessage.includes("symptom assessment")) {
+      navigate("/predict");
     }
 
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: "I have noted your request. Can you please provide more details?" },
-      ]);
+      setMessages((prev) => [...prev, { sender: "bot", text: "I have noted your request. Can you please provide more details?" }]);
     }, 1000);
-
-    setInput(""); // Clear input field after sending message
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter" && input.trim() !== "") {
-      sendMessage(input);
-    }
+    if (e.key === "Enter") sendMessage(input);
   };
 
   useEffect(() => {
@@ -78,11 +74,7 @@ const Chatbot = () => {
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.2 }}
-                  className={`p-3 text-sm rounded-lg shadow-md max-w-xs ${
-                    msg.sender === "user"
-                      ? "bg-blue-500 text-white rounded-tr-none"
-                      : "bg-gray-300 text-black rounded-tl-none"
-                  }`}
+                  className={`p-3 text-sm rounded-lg shadow-md max-w-xs ${msg.sender === "user" ? "bg-blue-500 text-white rounded-tr-none" : "bg-gray-300 text-black rounded-tl-none"}`}
                 >
                   {msg.text}
                 </motion.div>

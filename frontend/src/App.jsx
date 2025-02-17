@@ -14,16 +14,15 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Verify from "./pages/Verify";
 import Chatbot from "./components/Chatbot";
-<<<<<<< HEAD
+
 import Services from "./pages/Services";
-=======
+
 import SkinDiseaseDetector from "./pages/Skindiseas";
-<<<<<<< HEAD
+
 import Prediction from "./pages/Sas"; 
 
-=======
->>>>>>> 2c40c6cfd2cfec1a8e7e13a9858bcfa4f4f4b29e
->>>>>>> e9b1415224d0360f3000864f761a509294af4fa8
+
+
 
 const App = () => {
   return (
