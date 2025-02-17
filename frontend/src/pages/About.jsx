@@ -28,7 +28,7 @@ const About = () => {
         {/* Text Content */}
         <div className="md:w-1/2 text-gray-700 space-y-6">
           <h3 className="text-2xl font-semibold text-gray-800">
-            Welcome to <span className="text-primary">SympCare</span>
+            Welcome to <span className="text-blue-600">SympCare</span>
           </h3>
           <p>
             We simplify patient care and medical management through AI-driven
