@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
-import { assets } from "../assets/assets"; // Ensure assets like chat icon exist
-import { motion } from "framer-motion"; // Import Framer Motion for smooth animations
+import { assets } from "../assets/assets";
+import { motion } from "framer-motion";
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,39 +13,29 @@ const Chatbot = () => {
   const [showPopup, setShowPopup] = useState(true);
   const messagesEndRef = useRef(null);
 
-  // Toggle chatbot visibility
   const toggleChat = () => {
     setIsOpen((prev) => !prev);
     setShowPopup(false);
   };
 
-  // Send message and simulate bot reply
-  const sendMessage = () => {
-    if (!input.trim()) return;
-    const newMessage = { sender: "user", text: input };
+  const sendMessage = (message) => {
+    if (!message.trim()) return;
+    const newMessage = { sender: "user", text: message };
     setMessages((prev) => [...prev, newMessage]);
-
+    
     setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        { sender: "bot", text: "I have noted your request. Can you please provide more details about your symptoms or appointment needs?" }
-      ]);
+      setMessages((prev) => [...prev, { sender: "bot", text: "I have noted your request. Can you please provide more details?" }]);
     }, 1000);
-
-    setInput("");
   };
 
-  // Handle "Enter" key press
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") sendMessage();
+    if (e.key === "Enter") sendMessage(input);
   };
 
-  // Auto-scroll to the latest message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  // Hide popup after 7 seconds
   useEffect(() => {
     const timer = setTimeout(() => setShowPopup(false), 7000);
     return () => clearTimeout(timer);
@@ -60,28 +50,19 @@ const Chatbot = () => {
           animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          {/* Header */}
           <div className="bg-gradient-to-r from-blue-500 to-blue-700 p-4 flex justify-between items-center">
             <h3 className="text-white text-lg font-bold">SympCare AI Assistant</h3>
             <button onClick={toggleChat} className="text-white text-2xl">&times;</button>
           </div>
 
-          {/* Conversation Area */}
           <div className="p-4 h-64 overflow-y-auto bg-gray-100 space-y-2">
             {messages.map((msg, index) => (
-              <div
-                key={index}
-                className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
-              >
+              <div key={index} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
                 <motion.div
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ duration: 0.2 }}
-                  className={`p-3 text-sm rounded-lg shadow-md max-w-xs ${
-                    msg.sender === "user"
-                      ? "bg-blue-500 text-white rounded-tr-none"
-                      : "bg-gray-300 text-black rounded-tl-none"
-                  }`}
+                  className={`p-3 text-sm rounded-lg shadow-md max-w-xs ${msg.sender === "user" ? "bg-blue-500 text-white rounded-tr-none" : "bg-gray-300 text-black rounded-tl-none"}`}
                 >
                   {msg.text}
                 </motion.div>
@@ -90,7 +71,22 @@ const Chatbot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
+          {/* Quick Action Buttons */}
+          <div className="flex p-2 gap-2">
+            <button
+              onClick={() => sendMessage("I need a Skin Assessment.")}
+              className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
+            >
+              Skin Assessment
+            </button>
+            <button
+              onClick={() => sendMessage("I need a Symptom Assessment.")}
+              className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              Symptom Assessment
+            </button>
+          </div>
+
           <div className="flex border-t p-2 bg-white">
             <input
               type="text"
@@ -101,7 +97,7 @@ const Chatbot = () => {
               onKeyDown={handleKeyDown}
             />
             <button
-              onClick={sendMessage}
+              onClick={() => sendMessage(input)}
               className="bg-blue-600 text-white px-4 py-2 rounded-r-lg hover:bg-blue-700 transition"
             >
               Send
@@ -109,7 +105,6 @@ const Chatbot = () => {
           </div>
         </motion.div>
       ) : (
-        // Minimized Chat Button with popup message
         <div className="relative">
           {showPopup && (
             <motion.div 
