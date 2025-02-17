@@ -7,7 +7,8 @@ const Chatbot = () => {
   const [messages, setMessages] = useState([
     { sender: "bot", text: "👋 Welcome to SympCare AI Healthcare!" },
     { sender: "bot", text: "I’m your virtual assistant. I can help with symptom assessment, appointment booking, and more!" },
-    { sender: "bot", text: "Type your symptoms, and I'll guide you to the best next step. 💙" },
+    { sender: "bot", text: "Hi! How can I help you?" },
+    { sender: "bot", text: "1️⃣ Skin Assessment\n2️⃣ Symptom Assessment\n3️⃣ Appointment\n4️⃣ Mental Health" },
   ]);
   const [input, setInput] = useState("");
   const [showPopup, setShowPopup] = useState(true);
@@ -69,22 +70,6 @@ const Chatbot = () => {
               </div>
             ))}
             <div ref={messagesEndRef} />
-          </div>
-
-          {/* Quick Action Buttons */}
-          <div className="flex p-2 gap-2">
-            <button
-              onClick={() => sendMessage("I need a Skin Assessment.")}
-              className="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition"
-            >
-              Skin Assessment
-            </button>
-            <button
-              onClick={() => sendMessage("I need a Symptom Assessment.")}
-              className="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
-            >
-              Symptom Assessment
-            </button>
           </div>
 
           <div className="flex border-t p-2 bg-white">
