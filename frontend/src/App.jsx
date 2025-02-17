@@ -14,7 +14,11 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Verify from "./pages/Verify";
 import Chatbot from "./components/Chatbot";
+<<<<<<< HEAD
 import Services from "./pages/Services";
+=======
+import SkinDiseaseDetector from "./pages/Skindiseas";
+>>>>>>> 2c40c6cfd2cfec1a8e7e13a9858bcfa4f4f4b29e
 
 const App = () => {
   return (
@@ -33,6 +37,9 @@ const App = () => {
         <Route path="/my-appointments" element={<MyAppointments />} />
         <Route path="/my-profile" element={<MyProfile />} />
         <Route path="/verify" element={<Verify />} />
+        <Route path="/skin" element={<SkinDiseaseDetector />} />
+
+
       </Routes>
       <Chatbot />
       <Footer />
