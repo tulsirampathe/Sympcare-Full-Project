@@ -1,33 +1,42 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import Lottie from 'lottie-react';
-import chatbotAnimation from "../assets/chatbot.json"; // Ensure correct path
-import { FaComments } from "react-icons/fa"; // Importing a message icon
+import Lottie from "lottie-react";
+import chatbotAnimation from "../assets/chatbot.json";
+import {
+  FaPaperPlane,
+  FaImage,
+  FaTimes,
+  FaWindowMaximize,
+  FaWindowMinimize,
+} from "react-icons/fa";
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isMaximized, setIsMaximized] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: "bot", text: "👋 Welcome to SympCare AI Healthcare!" },
-    { sender: "bot", text: "I’m your virtual assistant. I can help with symptom assessment, appointment booking, and more!" },
-    { sender: "bot", text: "Hi! How can I help you?" },
-    { sender: "bot", text: "1️⃣ Skin Assessment\n2️⃣ Symptom Assessment\n3️⃣ Appointment\n4️⃣ Mental Health" },
+    {
+      sender: "bot",
+      text: "👋 Welcome to **SympCare AI** - Your Healthcare Assistant!",
+    },
+    {
+      sender: "bot",
+      text: "I can assist with symptom analysis, skin disease detection, mental health tips, and more.",
+    },
+    { sender: "bot", text: "How can I help you today? 😊" },
   ]);
   const [input, setInput] = useState("");
-  const [showPopup, setShowPopup] = useState(true);
   const [imageFile, setImageFile] = useState(null);
-  const [popupMessage, setPopupMessage] = useState("Hi! Need assistance? Click Me");
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
 
-  const toggleChat = () => {
-    setIsOpen((prev) => !prev);
-    setShowPopup(false);
-  };
+  const toggleChat = () => setIsOpen(!isOpen);
+  const toggleMaximize = () => setIsMaximized(!isMaximized);
 
   const sendMessage = async (message) => {
     if (!message.trim() && !imageFile) return;
 
+    // Send the user text message
     setMessages((prev) => [...prev, { sender: "user", text: message }]);
 
     if (message.toLowerCase().includes("skin assessment")) {
@@ -37,134 +46,179 @@ const Chatbot = () => {
     }
 
     if (imageFile) {
+      // Create FormData to send both image and text message
       const formData = new FormData();
       formData.append("image", imageFile);
-      try {
-        const response = await fetch("http://127.0.0.1:5000/predict", {
-          method: "POST",
-          body: formData,
-        });
-        const data = await response.json();
-        if (response.ok) {
-          setMessages((prev) => [...prev, { sender: "bot", text: `Predicted Disease: ${data.prediction}` }]);
-        } else {
-          setMessages((prev) => [...prev, { sender: "bot", text: `Error: ${data.error}` }]);
-        }
-      } catch (error) {
-        setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
-      }
-    } else {
-      setMessages((prev) => [...prev, { sender: "bot", text: "Please upload an image for prediction." }]);
+      formData.append("message", message); // Attach the user message as well
+
+      console.log(formData);
+      
+    //   try {
+    //     const response = await fetch("http://127.0.0.1:5000/predict", {
+    //       method: "POST",
+    //       body: formData,
+    //     });
+    //     const data = await response.json();
+
+    //     // Show the prediction result in chat with the image
+    //     if (response.ok) {
+    //       setMessages((prev) => [
+    //         ...prev,
+    //         {
+    //           sender: "bot",
+    //           text: `🔬 **Prediction Result:** ${data.prediction}`,
+    //           image: URL.createObjectURL(imageFile), // Show the image in the chat
+    //         },
+    //       ]);
+    //     } else {
+    //       setMessages((prev) => [
+    //         ...prev,
+    //         { sender: "bot", text: `⚠️ Error: ${data.error}` },
+    //       ]);
+    //     }
+    //   } catch (error) {
+    //     setMessages((prev) => [
+    //       ...prev,
+    //       {
+    //         sender: "bot",
+    //         text: "🚨 An error occurred while processing the image.",
+    //       },
+    //     ]);
+    //   }
+    // } else {
+    //   setMessages((prev) => [
+    //     ...prev,
+    //     {
+    //       sender: "bot",
+    //       text: "🤖 Not sure how to respond. Try another query!",
+    //     },
+    //   ]);
     }
 
     setInput("");
     setImageFile(null);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") sendMessage(input);
-  };
-
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      setMessages((prev) => [...prev, { sender: "user", text: `Image uploaded: ${file.name}` }]);
-    }
-  };
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  useEffect(() => {
-    const timer = setTimeout(() => setShowPopup(false), 7000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Update popup message every second
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPopupMessage("Hi! Need assistance? Click Me");
-    }, 10000); // Update every second
-
-    return () => clearInterval(interval);
-  }, []);
-
-  const lottieOptions = {
-    loop: true,
-    autoplay: true, 
-    animationData: chatbotAnimation, 
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice"
-    }
-  };
-
   return (
-    <div className="fixed bottom-4 right-4 z-50">
-      {/* Popup message above chatbot icon */}
-      {showPopup && (
-        <motion.div
-          className="absolute bottom-40 right-4 bg-white shadow-lg p-3 rounded-lg flex items-center space-x-2"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 30 }}
-        >
-          <FaComments className="text-gray-500" />
-          <p>{popupMessage}</p>
-        </motion.div>
-      )}
-
+    <div
+      className={`${
+        isMaximized
+          ? "fixed inset-0 flex justify-center items-center z-50"
+          : "fixed bottom-5 right-5 z-50"
+      }`}
+    >
       {isOpen ? (
-        <motion.div 
-          className="w-full max-w-md bg-white shadow-lg rounded-xl overflow-hidden flex flex-col"
-          initial={{ scale: 0.9, opacity: 0, y: 20 }}
-          animate={{ scale: 1, opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
+        <motion.div
+          className={`${
+            isMaximized
+              ? "w-[90%] md:w-[60%] h-[80vh] md:h-[70vh]"
+              : "w-full max-w-md h-[500px]"
+          } bg-white shadow-2xl rounded-2xl overflow-hidden flex flex-col border border-gray-200`}
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
           transition={{ duration: 0.3 }}
         >
-          <div className="bg-gradient-to-r from-blue-500 to-blue-700 p-4 flex justify-between items-center rounded-t-xl">
-            <h3 className="text-white text-lg font-semibold">SympCare AI Assistant</h3>
-            <button onClick={toggleChat} className="text-white text-2xl focus:outline-none">&times;</button>
+          {/* Header */}
+          <div className="bg-primary p-4 flex justify-between items-center rounded-t-2xl">
+            <h3 className="text-white text-lg font-bold">
+              SympCare AI Assistant
+            </h3>
+            <div className="flex space-x-3">
+              {/* Hide maximize button on small screens */}
+              <button
+                onClick={toggleMaximize}
+                className="text-white text-xl hover:scale-110 transition hidden md:inline-block"
+              >
+                {isMaximized ? <FaWindowMinimize /> : <FaWindowMaximize />}
+              </button>
+              <button
+                onClick={toggleChat}
+                className="text-white text-xl hover:scale-110 transition"
+              >
+                <FaTimes />
+              </button>
+            </div>
           </div>
 
-          <div className="p-4 h-80 overflow-y-auto flex flex-col space-y-3">
+          {/* Chat Messages */}
+          <div className="p-4 h-full overflow-y-auto flex flex-col space-y-3 bg-gray-50">
             {messages.map((msg, index) => (
               <motion.div
                 key={index}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: index * 0.3, duration: 0.3 }}
-                className={`mb-2 p-2 rounded-lg max-w-xs ${msg.sender === "bot" ? "bg-gray-200 self-start" : "bg-blue-500 text-white self-end"}`}
+                initial={{ opacity: 0, x: msg.sender === "bot" ? -30 : 30 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: index * 0.1, duration: 0.3 }}
+                className={`max-w-xs p-3 rounded-lg shadow-md ${
+                  msg.sender === "bot"
+                    ? "bg-primary text-white self-start"
+                    : "bg-blue-500 text-white self-end"
+                }`}
               >
                 {msg.text}
+
+                {/* Display the image if available */}
+                {msg.image && (
+                  <div className="mt-2">
+                    <img
+                      src={msg.image}
+                      alt="User sent"
+                      className="w-48 h-48 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
               </motion.div>
             ))}
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-4 border-t flex items-center space-x-3">
+          {/* Input Field */}
+          <div className="p-4 border-t bg-white flex items-center space-x-2">
             <input
               type="text"
-              className="flex-1 p-2 border rounded-lg"
+              className="flex-1 p-2 border rounded-lg outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Type a message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
             />
-            <input type="file" accept="image/*" onChange={handleImageChange} className="ml-2 p-2 border rounded-lg" />
-            <button onClick={() => sendMessage(input)} className="ml-2 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition">Send</button>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => setImageFile(e.target.files[0])}
+              className="hidden"
+              id="fileInput"
+            />
+            <label
+              htmlFor="fileInput"
+              className="p-2 bg-gray-200 rounded-lg cursor-pointer hover:bg-gray-300"
+            >
+              <FaImage className="text-gray-600" />
+            </label>
+            <button
+              onClick={() => sendMessage(input)}
+              className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"
+            >
+              <FaPaperPlane />
+            </button>
           </div>
         </motion.div>
       ) : (
         <motion.button
           onClick={toggleChat}
-          className="text-white p-6 hover:scale-110 transform transition"
+          className="text-white hover:scale-110 transform transition flex items-center"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
-          <div className="w-40 h-40">
-            <Lottie animationData={chatbotAnimation} loop={true} className="w-full h-full" />
+          <div className="w-28 h-28">
+            <Lottie
+              animationData={chatbotAnimation}
+              loop={true}
+              className="w-full h-full"
+            />
           </div>
         </motion.button>
       )}

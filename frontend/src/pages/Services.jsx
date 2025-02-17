@@ -15,7 +15,7 @@ const Services = () => {
       title: "Hassle-Free Appointment Booking",
       text: "Easily schedule your doctor appointments online with just a few clicks.",
       icon: <FaCalendarCheck className="text-4xl text-blue-600" />,
-      route: "/appointment",
+      route: "/doctors",
     },
     {
       title: "Comprehensive Health Assessments",
@@ -38,7 +38,7 @@ const Services = () => {
   ];
 
   return (
-    <section className="px-6">
+    <section className="px-6 py-16" id="services">
       {/* Centered Section Heading */}
       <div className="text-center mb-12">
         <h2 className="text-3xl font-bold text-gray-800">
