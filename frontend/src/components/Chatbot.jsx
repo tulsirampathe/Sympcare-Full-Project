@@ -37,20 +37,54 @@ const Chatbot = () => {
 
   const sendMessage = async (message) => {
     if (!message.trim() && !imageFile) return;
+<<<<<<< HEAD
+  
+=======
 
     // Send the user text message
+>>>>>>> d3d568051b5242bb64a824e5cb57ee078f9e19e8
     setMessages((prev) => [...prev, { sender: "user", text: message }]);
-
+  
+    // Handle skin assessment (image upload)
     if (message.toLowerCase().includes("skin assessment")) {
       setImageFile(null);
       navigate("/skin");
       return;
     }
-
+  
+    // Handle symptom assessment (text input)
+    if (message.toLowerCase().includes("symptom assessment")) {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Please provide your symptoms (separate by commas)." }]);
+      return;
+    }
+  
+    // Handle mental health assessment
+    if (message.toLowerCase().includes("mental health")) {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Please answer the following questions regarding your mental health." }]);
+      return;
+    }
+  
+    // Handle image upload for skin disease prediction
     if (imageFile) {
       // Create FormData to send both image and text message
       const formData = new FormData();
       formData.append("image", imageFile);
+<<<<<<< HEAD
+      try {
+        const response = await fetch("http://127.0.0.1:5000/skin-predict", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await response.json();
+        if (response.ok) {
+          setMessages((prev) => [...prev, { sender: "bot", text: `Predicted Disease: ${data.prediction}` }]);
+        } else {
+          setMessages((prev) => [...prev, { sender: "bot", text: `Error: ${data.error}` }]);
+        }
+      } catch (error) {
+        setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
+      }
+=======
       formData.append("message", message); // Attach the user message as well
 
       console.log(formData);
@@ -95,11 +129,67 @@ const Chatbot = () => {
     //       text: "🤖 Not sure how to respond. Try another query!",
     //     },
     //   ]);
+>>>>>>> d3d568051b5242bb64a824e5cb57ee078f9e19e8
     }
-
+  
+    // Handle symptom-based disease prediction
+    if (message.toLowerCase().includes("symptom")) {
+      const symptoms = message.split(","); // Example: "back pain, fever, etc."
+      try {
+        const response = await fetch("http://127.0.0.1:5000/symptoms-predict", {
+          method: "POST",
+          body: new URLSearchParams({ Symptom1: symptoms[0], Symptom2: symptoms[1] }),
+        });
+        const data = await response.json();
+        setMessages((prev) => [...prev, { sender: "bot", text: `Most Accurate Disease: ${data["Most Accurate Disease"]}` }]);
+      } catch (error) {
+        setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
+      }
+    }
+  
+    // Handle mental health prediction
+    if (message.toLowerCase().includes("mental health")) {
+      const data = {
+        age: 25, // Example data
+        gender: "Male", // Example data
+        employment_status: "Employed", // Example data
+        family_history: "No", // Example data
+        responses: ["Yes", "No", "Yes", "No", "Yes", "No", "Yes", "Yes", "No", "Yes", "No", "Yes"],
+      };
+  
+      try {
+        const response = await fetch("http://127.0.0.1:5000/mental-predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        const data = await response.json();
+        setMessages((prev) => [...prev, { sender: "bot", text: `Mental Health Prediction: ${data.prediction}` }]);
+      } catch (error) {
+        setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
+      }
+    }
+  
     setInput("");
     setImageFile(null);
   };
+<<<<<<< HEAD
+  
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") sendMessage(input);
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImageFile(file);
+      setMessages((prev) => [...prev, { sender: "user", text: `Image uploaded: ${file.name}` }]);
+    }
+  };
+=======
+>>>>>>> d3d568051b5242bb64a824e5cb57ee078f9e19e8
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
