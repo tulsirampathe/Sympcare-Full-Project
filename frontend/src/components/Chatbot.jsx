@@ -30,7 +30,9 @@ const Chatbot = () => {
   const messagesEndRef = useRef(null);
   const navigate = useNavigate();
 
-  const toggleChat = () => setIsOpen(!isOpen);
+  const toggleChat = () => {setIsOpen(!isOpen)
+    setIsMaximized(false)
+  };
   const toggleMaximize = () => setIsMaximized(!isMaximized);
 
   const sendMessage = async (message) => {
