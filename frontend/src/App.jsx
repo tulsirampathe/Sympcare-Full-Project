@@ -19,8 +19,8 @@ import Services from "./pages/Services";
 
 import SkinDiseaseDetector from "./pages/SkinDiseaseDetector";
 
-import SymptomAnalysis from "./pages/SymptomAnalysis ";
 import MentalHealthAssessment from "./pages/MentalHealthAssessment";
+import SymptomAnalysis from "./pages/SymptomAnalysis";
 
 const App = () => {
   return (
