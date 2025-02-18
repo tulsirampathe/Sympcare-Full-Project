@@ -111,6 +111,29 @@ const DoctorContextProvider = (props) => {
 
     }
 
+    const sendSms = async (phoneNumber, message) => {
+        if (!phoneNumber || !message) {
+            toast.error("Please enter a valid phone number and message.");
+            return;
+        }
+    
+        try {
+            const { data } = await axios.post(`${backendUrl}/api/doctor/send-sms`, 
+                { to: phoneNumber, message }, 
+                { headers: { dToken } }
+            );
+    
+            if (data.success) {
+                toast.success("✅ Message sent successfully!");
+            } else {
+                toast.error("❌ Failed to send message.");
+            }
+        } catch (error) {
+            toast.error("⚠ Error sending message.");
+            console.log(error);
+        }
+    };
+
     const value = {
         dToken, setDToken, backendUrl,
         appointments,
@@ -120,6 +143,7 @@ const DoctorContextProvider = (props) => {
         dashData, getDashData,
         profileData, setProfileData,
         getProfileData,
+        sendSms
     }
 
     return (
