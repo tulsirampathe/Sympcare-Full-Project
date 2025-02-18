@@ -27,20 +27,34 @@ const Chatbot = () => {
 
   const sendMessage = async (message) => {
     if (!message.trim() && !imageFile) return;
-
+  
     setMessages((prev) => [...prev, { sender: "user", text: message }]);
-
+  
+    // Handle skin assessment (image upload)
     if (message.toLowerCase().includes("skin assessment")) {
       setImageFile(null);
       navigate("/skin");
       return;
     }
-
+  
+    // Handle symptom assessment (text input)
+    if (message.toLowerCase().includes("symptom assessment")) {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Please provide your symptoms (separate by commas)." }]);
+      return;
+    }
+  
+    // Handle mental health assessment
+    if (message.toLowerCase().includes("mental health")) {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Please answer the following questions regarding your mental health." }]);
+      return;
+    }
+  
+    // Handle image upload for skin disease prediction
     if (imageFile) {
       const formData = new FormData();
       formData.append("image", imageFile);
       try {
-        const response = await fetch("http://127.0.0.1:5000/predict", {
+        const response = await fetch("http://127.0.0.1:5000/skin-predict", {
           method: "POST",
           body: formData,
         });
@@ -53,14 +67,52 @@ const Chatbot = () => {
       } catch (error) {
         setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
       }
-    } else {
-      setMessages((prev) => [...prev, { sender: "bot", text: "Please upload an image for prediction." }]);
     }
-
+  
+    // Handle symptom-based disease prediction
+    if (message.toLowerCase().includes("symptom")) {
+      const symptoms = message.split(","); // Example: "back pain, fever, etc."
+      try {
+        const response = await fetch("http://127.0.0.1:5000/symptoms-predict", {
+          method: "POST",
+          body: new URLSearchParams({ Symptom1: symptoms[0], Symptom2: symptoms[1] }),
+        });
+        const data = await response.json();
+        setMessages((prev) => [...prev, { sender: "bot", text: `Most Accurate Disease: ${data["Most Accurate Disease"]}` }]);
+      } catch (error) {
+        setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
+      }
+    }
+  
+    // Handle mental health prediction
+    if (message.toLowerCase().includes("mental health")) {
+      const data = {
+        age: 25, // Example data
+        gender: "Male", // Example data
+        employment_status: "Employed", // Example data
+        family_history: "No", // Example data
+        responses: ["Yes", "No", "Yes", "No", "Yes", "No", "Yes", "Yes", "No", "Yes", "No", "Yes"],
+      };
+  
+      try {
+        const response = await fetch("http://127.0.0.1:5000/mental-predict", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(data),
+        });
+        const data = await response.json();
+        setMessages((prev) => [...prev, { sender: "bot", text: `Mental Health Prediction: ${data.prediction}` }]);
+      } catch (error) {
+        setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
+      }
+    }
+  
     setInput("");
     setImageFile(null);
   };
-
+  
   const handleKeyDown = (e) => {
     if (e.key === "Enter") sendMessage(input);
   };

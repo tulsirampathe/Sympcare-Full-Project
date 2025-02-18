@@ -25,42 +25,59 @@ const SkinDiseaseDetector = () => {
 
   const handlePredict = async () => {
     if (!file) return alert("Please upload an image first!");
-
+  
     setLoading(true);
-
-    // Simulating API response after ML model prediction
-    setTimeout(() => {
-      setPrediction({
-        name: "Psoriasis",
-        image: "https://via.placeholder.com/300", // Replace with actual disease image URL
-        info: "Psoriasis is a chronic autoimmune condition that causes skin cells to build up rapidly, leading to scaling on the skin’s surface.",
-        doctors: [
-          {
-            _id: "doc1",
-            name: "Dr. Richard James",
-            image: "https://via.placeholder.com/150", // Replace with actual doctor image URL
-            speciality: "General Physician",
-            available: true,
-          },
-          {
-            _id: "doc2",
-            name: "Dr. A. Sharma",
-            image: "https://via.placeholder.com/150",
-            speciality: "Dermatologist",
-            available: false,
-          },
-          {
-            _id: "doc3",
-            name: "Dr. Priya Singh",
-            image: "https://via.placeholder.com/150",
-            speciality: "Skin Specialist",
-            available: true,
-          },
-        ],
+  
+    const formData = new FormData();
+    formData.append("image", file);
+  
+    try {
+      const response = await fetch("http://127.0.0.1:5000/skin-predict", {
+        method: "POST",
+        body: formData,
       });
+  
+      const data = await response.json();
+
+      if (response.ok) {
+        setPrediction({
+          name: data.prediction, // Predicted disease from Flask
+          image: URL.createObjectURL(file),
+          info: "This is a predicted skin disease. Please consult a doctor for confirmation.", // Update based on actual data
+          doctors: [
+            {
+              _id: "doc1",
+              name: "Dr. Richard James",
+              image: "https://via.placeholder.com/150",
+              speciality: "General Physician",
+              available: true,
+            },
+            {
+              _id: "doc2",
+              name: "Dr. A. Sharma",
+              image: "https://via.placeholder.com/150",
+              speciality: "Dermatologist",
+              available: false,
+            },
+            {
+              _id: "doc3",
+              name: "Dr. Priya Singh",
+              image: "https://via.placeholder.com/150",
+              speciality: "Skin Specialist",
+              available: true,
+            },
+          ],
+        });
+      } else {
+        alert(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      alert("Failed to connect to the server. Please try again.",error);
+    } finally {
       setLoading(false);
-    }, 2000);
+    }
   };
+  
 
   return (
     <div className="px-6 md:px-12 lg:px-24 min-h-screen flex flex-col items-center">
