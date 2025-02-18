@@ -21,6 +21,7 @@ import SkinDiseaseDetector from "./pages/SkinDiseaseDetector";
 
 import MentalHealthAssessment from "./pages/MentalHealthAssessment";
 import SymptomAnalysis from "./pages/SymptomAnalysis";
+import HealthEducation from "./components/HealthEducation";
 
 const App = () => {
   return (
@@ -42,6 +43,7 @@ const App = () => {
         <Route path="/skin-detection" element={<SkinDiseaseDetector />} />
         <Route path="/symptom-analysis" element={<SymptomAnalysis />} />
         <Route path="/health-assessment" element={<MentalHealthAssessment />} />
+        <Route path="/health-education" element={<HealthEducation />} />
       </Routes>
       <Chatbot />
       <Footer />

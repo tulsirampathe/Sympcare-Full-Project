@@ -229,3 +229,6 @@ export  const diseaseInfo = {
       "treatment": "Topical antibiotics, oral antibiotics for severe cases."
     }
   };
+
+  
+

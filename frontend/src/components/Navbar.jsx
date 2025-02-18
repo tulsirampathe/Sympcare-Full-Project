@@ -32,6 +32,10 @@ const Navbar = () => {
           <li className='py-1'>SERVICES</li>
           <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
         </NavLink>
+        <NavLink to='/health-education' >
+          <li className='py-1'>HEALTH EDUCTION</li>
+          <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
+        </NavLink>
         <NavLink to='/about' >
           <li className='py-1'>ABOUT</li>
           <hr className='border-none outline-none h-0.5 bg-primary w-3/5 m-auto hidden' />
