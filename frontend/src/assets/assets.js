@@ -39,6 +39,7 @@ import General_physician from "./General_physician.svg";
 import Gynecologist from "./Gynecologist.svg";
 import Neurologist from "./Neurologist.svg";
 import Pediatricians from "./Pediatricians.svg";
+import predict_result from './predict_result.png'
 
 export const assets = {
   appointment_img,
@@ -60,6 +61,7 @@ export const assets = {
   stripe_logo,
   razorpay_logo,
   Skin_Disease_img,
+  predict_result
 };
 
 export const specialityData = [
