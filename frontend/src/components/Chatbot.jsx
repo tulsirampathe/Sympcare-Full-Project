@@ -37,12 +37,9 @@ const Chatbot = () => {
 
   const sendMessage = async (message) => {
     if (!message.trim() && !imageFile) return;
-<<<<<<< HEAD
   
-=======
 
     // Send the user text message
->>>>>>> d3d568051b5242bb64a824e5cb57ee078f9e19e8
     setMessages((prev) => [...prev, { sender: "user", text: message }]);
   
     // Handle skin assessment (image upload)
@@ -69,7 +66,6 @@ const Chatbot = () => {
       // Create FormData to send both image and text message
       const formData = new FormData();
       formData.append("image", imageFile);
-<<<<<<< HEAD
       try {
         const response = await fetch("http://127.0.0.1:5000/skin-predict", {
           method: "POST",
@@ -84,7 +80,6 @@ const Chatbot = () => {
       } catch (error) {
         setMessages((prev) => [...prev, { sender: "bot", text: "An error occurred while predicting." }]);
       }
-=======
       formData.append("message", message); // Attach the user message as well
 
       console.log(formData);
@@ -129,7 +124,6 @@ const Chatbot = () => {
     //       text: "🤖 Not sure how to respond. Try another query!",
     //     },
     //   ]);
->>>>>>> d3d568051b5242bb64a824e5cb57ee078f9e19e8
     }
   
     // Handle symptom-based disease prediction
@@ -175,7 +169,6 @@ const Chatbot = () => {
     setInput("");
     setImageFile(null);
   };
-<<<<<<< HEAD
   
   const handleKeyDown = (e) => {
     if (e.key === "Enter") sendMessage(input);
@@ -188,8 +181,6 @@ const Chatbot = () => {
       setMessages((prev) => [...prev, { sender: "user", text: `Image uploaded: ${file.name}` }]);
     }
   };
-=======
->>>>>>> d3d568051b5242bb64a824e5cb57ee078f9e19e8
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
