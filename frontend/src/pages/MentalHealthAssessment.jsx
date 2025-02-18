@@ -25,34 +25,34 @@ const questions = [
 
 const symptomsData = {
   Anxiety: {
-    image: "https://via.placeholder.com/100?text=Anxiety",
+    image: "./Anxiety.jpg",
     description:
       "Anxiety is characterized by excessive worry, nervousness, and tension.",
     treatment:
       "Treatment includes therapy, meditation, relaxation techniques, and medication.",
   },
   Depression: {
-    image: "https://via.placeholder.com/100?text=Depression",
+    image: "./Depression.jpg",
     description:
       "Depression involves persistent sadness, loss of interest, and fatigue.",
     treatment:
       "Treatment includes counseling, lifestyle changes, and antidepressants.",
   },
   Insomnia: {
-    image: "https://via.placeholder.com/100?text=Insomnia",
+    image: "./Inomnia.jpg",
     description: "Insomnia is the difficulty in falling or staying asleep.",
     treatment:
       "Treatment includes sleep therapy, avoiding caffeine, and improving sleep hygiene.",
   },
   Phobia: {
-    image: "https://via.placeholder.com/100?text=Phobia",
+    image: "./Phobia.jpg",
     description:
       "A phobia is an extreme fear of a specific object, place, or situation.",
     treatment:
       "Treatment includes cognitive behavioral therapy (CBT) and exposure therapy.",
   },
   Schizophrenia: {
-    image: "https://via.placeholder.com/100?text=Schizophrenia",
+    image: "./Schizophrenia",
     description:
       "Schizophrenia involves delusions, hallucinations, and disorganized thinking.",
     treatment: "Treatment includes antipsychotic medication and therapy.",
