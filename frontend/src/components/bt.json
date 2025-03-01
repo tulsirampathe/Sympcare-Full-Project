@@ -1,0 +1,11 @@
+{
+    "welcome": [
+      "👋 Welcome to **SympCare AI** - Your Healthcare Assistant!",
+      "I can assist with symptom analysis, skin disease detection, mental health tips, and more.",
+      "How can I help you today? 😊"
+    ],
+    "symptom_assessment": "Please provide your symptoms (separate by commas).",
+    "mental_health": "Please answer the following questions regarding your mental health.",
+    "error": "🚨 An error occurred while processing your request."
+  }
+  

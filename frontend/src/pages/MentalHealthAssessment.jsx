@@ -39,7 +39,7 @@ const symptomsData = {
       "Treatment includes counseling, lifestyle changes, and antidepressants.",
   },
   Insomnia: {
-    image: "./Inomnia.jpg",
+    image: "./Insomnia.jpg",
     description: "Insomnia is the difficulty in falling or staying asleep.",
     treatment:
       "Treatment includes sleep therapy, avoiding caffeine, and improving sleep hygiene.",
@@ -52,7 +52,7 @@ const symptomsData = {
       "Treatment includes cognitive behavioral therapy (CBT) and exposure therapy.",
   },
   Schizophrenia: {
-    image: "./Schizophrenia",
+    image: "./Schizophrenia.jpg",
     description:
       "Schizophrenia involves delusions, hallucinations, and disorganized thinking.",
     treatment: "Treatment includes antipsychotic medication and therapy.",
@@ -63,8 +63,8 @@ const MentalHealthAssessment = () => {
   const [formData, setFormData] = useState({
     age: "",
     gender: "",
-    employmentStatus: "",
-    familyHistory: "",
+    employment_status: "",
+    family_history: "",
     responses: Array(12).fill(""),
   });
 
@@ -87,8 +87,8 @@ const MentalHealthAssessment = () => {
     if (
       !formData.age ||
       !formData.gender ||
-      !formData.employmentStatus ||
-      !formData.familyHistory
+      !formData.employment_status ||
+      !formData.family_history
     ) {
       alert("Please fill in all required fields.");
       return;
@@ -115,7 +115,7 @@ const MentalHealthAssessment = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen ">
+    <div className="min-h-screen flex flex-col items-center p-6">
       <div className="w-full max-w-4xl bg-white p-6 md:p-8 rounded-lg shadow-xl">
         <h1 className="text-2xl md:text-3xl font-semibold text-center mb-4 md:mb-6">
           <span className="text-primary">Mental Health</span> Assessment
@@ -172,13 +172,13 @@ const MentalHealthAssessment = () => {
           <div className="flex items-center space-x-2">
             <FaBriefcase className="text-blue-600" />
             <div className="w-full">
-              <label htmlFor="employmentStatus" className="text-lg font-medium">
+              <label htmlFor="employment_status" className="text-lg font-medium">
                 Employment Status:
               </label>
               <select
-                id="employmentStatus"
-                name="employmentStatus"
-                value={formData.employmentStatus}
+                id="employment_status"
+                name="employment_status"
+                value={formData.employment_status}
                 onChange={handleChange}
                 required
                 className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -196,13 +196,13 @@ const MentalHealthAssessment = () => {
           <div className="flex items-center space-x-2">
             <FaHeart className="text-blue-600" />
             <div className="w-full">
-              <label htmlFor="familyHistory" className="text-lg font-medium">
+              <label htmlFor="family_history" className="text-lg font-medium">
                 Family History of Mental Health:
               </label>
               <select
-                id="familyHistory"
-                name="familyHistory"
-                value={formData.familyHistory}
+                id="family_history"
+                name="family_history"
+                value={formData.family_history}
                 onChange={handleChange}
                 required
                 className="mt-1 p-2 w-full border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -258,49 +258,37 @@ const MentalHealthAssessment = () => {
           </button>
         </form>
 
-        {result && (
-          <div className="mt-6 p-4 bg-green-100 border border-green-400 rounded-md">
-            <h2 className="text-lg font-semibold text-green-700">
-              Prediction <span className="text-primary">Result</span>
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              {Object.entries(result).map(([symptom, hasSymptom]) => (
-                <div
-                  key={symptom}
-                  className="p-4 bg-white shadow-md rounded-md flex items-center"
-                >
-                  <img
-                    src={symptomsData[symptom].image}
-                    alt={symptom}
-                    className="w-16 h-16 rounded-full mr-4"
-                  />
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-700">
-                      {symptom}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {symptomsData[symptom].description}
-                    </p>
-                    <p
-                      className={`font-bold ${
-                        hasSymptom ? "text-red-600" : "text-green-600"
-                      }`}
-                    >
+        
+      </div>
+
+      {/* Result Section */}
+      {result && (
+          <div className="w-full max-w-4xl bg-white p-6 mt-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-center mb-4">Prediction <span className="text-primary">Result</span></h2>
+            <table className="w-full border-collapse border border-gray-300">
+              <thead>
+                <tr className="bg-gray-200">
+                  <th className="border p-2">Symptom</th>
+                  <th className="border p-2">Status</th>
+                  <th className="border p-2">Description</th>
+                  <th className="border p-2">Treatment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {Object.entries(result).map(([symptom, hasSymptom]) => (
+                  <tr key={symptom}>
+                    <td className="border p-2 font-semibold">{symptom}</td>
+                    <td className={`border p-2 font-bold ${hasSymptom ? "text-red-600" : "text-green-600"}`}>
                       {hasSymptom ? "Detected" : "Not Detected"}
-                    </p>
-                    {hasSymptom && (
-                      <p className="text-sm text-blue-600 mt-2">
-                        <strong>Treatment:</strong>{" "}
-                        {symptomsData[symptom].treatment}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
+                    </td>
+                    <td className="border p-2">{symptomsData[symptom]?.description || "N/A"}</td>
+                    <td className="border p-2">{hasSymptom ? symptomsData[symptom]?.treatment || "N/A" : "N/A"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
-      </div>
     </div>
   );
 };

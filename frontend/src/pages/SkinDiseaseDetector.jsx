@@ -1,12 +1,20 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { assets } from "../assets/assets";
+import { skindata } from "../data/skindiseaseData"
+import { AppContext } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const SkinDiseaseDetector = () => {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
+
+    const { doctors } = useContext(AppContext)
+
+    const navigate = useNavigate()
+  
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -25,59 +33,39 @@ const SkinDiseaseDetector = () => {
 
   const handlePredict = async () => {
     if (!file) return alert("Please upload an image first!");
-  
+
     setLoading(true);
-  
+
     const formData = new FormData();
     formData.append("image", file);
-  
+
     try {
       const response = await fetch("http://127.0.0.1:5000/skin-predict", {
         method: "POST",
         body: formData,
       });
-  
+
       const data = await response.json();
+
+      const predictedDisease = skindata.find(disease => disease.name.toLowerCase() === data.prediction.toLowerCase());
 
       if (response.ok) {
         setPrediction({
-          name: data.prediction, // Predicted disease from Flask
-          image: URL.createObjectURL(file),
-          info: "This is a predicted skin disease. Please consult a doctor for confirmation.", // Update based on actual data
-          doctors: [
-            {
-              _id: "doc1",
-              name: "Dr. Richard James",
-              image: "https://via.placeholder.com/150",
-              speciality: "General Physician",
-              available: true,
-            },
-            {
-              _id: "doc2",
-              name: "Dr. A. Sharma",
-              image: "https://via.placeholder.com/150",
-              speciality: "Dermatologist",
-              available: false,
-            },
-            {
-              _id: "doc3",
-              name: "Dr. Priya Singh",
-              image: "https://via.placeholder.com/150",
-              speciality: "Skin Specialist",
-              available: true,
-            },
-          ],
+          name: predictedDisease.name,
+          info: predictedDisease.overview,
+          prescription: predictedDisease.prescription,
+          doctors: doctors.filter(doc => doc.speciality.toLowerCase() == data.prediction.toLowerCase())
         });
       } else {
         alert(`Error: ${data.error}`);
       }
     } catch (error) {
-      alert("Failed to connect to the server. Please try again.",error);
+      alert("Failed to connect to the server. Please try again.", error);
     } finally {
       setLoading(false);
     }
   };
-  
+
 
   return (
     <div className="px-6 md:px-12 lg:px-24 min-h-screen flex flex-col items-center">
@@ -110,9 +98,8 @@ const SkinDiseaseDetector = () => {
 
           {/* Drag & Drop Area */}
           <div
-            className={`border-2 border-dashed ${
-              dragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
-            } rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-all`}
+            className={`border-2 border-dashed ${dragging ? "border-blue-500 bg-blue-50" : "border-gray-300"
+              } rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer transition-all`}
             onClick={() => document.getElementById("fileUpload").click()} // Open file input
             onDragOver={(e) => {
               e.preventDefault();
@@ -191,9 +178,13 @@ const SkinDiseaseDetector = () => {
                 </h5>
 
                 <h5 className="text-xl font-semibold text-primary">
-                  Medical Overview:
+                  Information:
                 </h5>
                 <p className="text-gray-600">{prediction.info}</p>
+                <h5 className="text-xl font-semibold text-primary">
+                  Prescription:
+                </h5>
+                <p className="text-gray-600">{prediction.prescription}</p>
               </div>
             </div>
           </div>
@@ -221,9 +212,8 @@ const SkinDiseaseDetector = () => {
                   {/* Doctor Availability */}
                   <div className="flex items-center mt-2">
                     <span
-                      className={`w-3 h-3 rounded-full ${
-                        doctor.available ? "bg-green-500" : "bg-red-500"
-                      } mr-2`}
+                      className={`w-3 h-3 rounded-full ${doctor.available ? "bg-green-500" : "bg-red-500"
+                        } mr-2`}
                     ></span>
                     <span className="text-gray-700">
                       {doctor.available ? "Available" : "Not Available"}
@@ -232,7 +222,7 @@ const SkinDiseaseDetector = () => {
 
                   {/* Book Appointment Button */}
                   {doctor.available && (
-                    <button className="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition-all">
+                    <button onClick={() => { navigate(`/appointment/${doctor._id}`); scrollTo(0, 0) }} className="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition-all">
                       Book Appointment
                     </button>
                   )}
