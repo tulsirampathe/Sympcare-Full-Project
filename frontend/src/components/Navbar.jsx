@@ -62,7 +62,7 @@ const Navbar = () => {
 
       <div className="flex items-center gap-4">
         {/* Google Translate (Visible on All Devices) */}
-        <div id="google_translate_element" className="hidden md:block"></div>
+        <div id="google_translate_element" className=""></div>
 
         {token && userData ? (
           <div className="flex items-center gap-2 cursor-pointer group relative">
