@@ -40,8 +40,10 @@ import Gynecologist from "./Gynecologist.svg";
 import Neurologist from "./Neurologist.svg";
 import Pediatricians from "./Pediatricians.svg";
 import predict_result from './predict_result.png'
+import Mental_Health  from './Mental Health AI Assistant.png'
 
 export const assets = {
+  Mental_Health,
   appointment_img,
   header_img,
   group_profiles,

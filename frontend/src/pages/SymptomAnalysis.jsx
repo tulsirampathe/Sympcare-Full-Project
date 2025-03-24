@@ -62,9 +62,11 @@ const SymptomAnalysis = () => {
           Symptom <span className="text-primary">Predictor</span>
         </h2>
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="col-span-2">
-              <label className="block font-medium">Your Name (required)</label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="col-span-1 sm:col-span-2">
+              <label className="block font-medium mb-1">
+                Your Name (required)
+              </label>
               <input
                 type="text"
                 className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -74,10 +76,12 @@ const SymptomAnalysis = () => {
               />
             </div>
             {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex flex-col">
-                <label className="block font-medium">Symptom {i + 1}</label>
+              <div key={i} className="w-full">
+                <label className="block font-medium mb-1">
+                  Symptom {i + 1}
+                </label>
                 <select
-                  className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none mt-1"
+                  className="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                   value={symptoms[i]}
                   onChange={(e) => handleChange(i, e.target.value)}
                 >
@@ -93,7 +97,7 @@ const SymptomAnalysis = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 mt-8"
+            className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg shadow-lg hover:bg-blue-700 transition-all duration-300 mt-6"
           >
             {loading ? "Predicting..." : "Predict Disease"}
           </button>
