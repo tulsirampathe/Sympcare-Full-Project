@@ -15,31 +15,33 @@ const MentalHealthAssessment = () => {
   const [role, setRole] = useState("");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState([]);
+  const [prediction, setPrediction] = useState("");
+  const [doctors, setDoctors] = useState([]);
 
   const questionsByRole = {
-    Student: [
-      "Do you often feel overwhelmed by academic pressure?",
-      "Do you struggle to concentrate during lectures or while studying?",
-      "How often do you feel anxious before exams or assignments?",
-      "Do you experience difficulty balancing academic and personal life?",
-      "Have you lost interest in extracurricular activities you once enjoyed?",
-      "Do you frequently procrastinate on assignments due to mental exhaustion?",
-      "Do you feel socially isolated or disconnected from your peers?",
-      "How often do you experience self-doubt about your abilities?",
-      "Do you feel that you are not performing as well as you should be?",
-      "Have you ever experienced difficulty sleeping due to academic stress?",
+    "Student": [
+        "Do you often feel overwhelmed by academic pressure?",
+        "Do you struggle to concentrate during lectures or while studying?",
+        "How often do you feel anxious before exams or assignments?",
+        "Do you experience difficulty balancing academic and personal life?",
+        "Have you lost interest in extracurricular activities you once enjoyed?",
+        "Do you frequently procrastinate on assignments due to mental exhaustion?",
+        "Do you feel socially isolated or disconnected from your peers?",
+        "How often do you experience self-doubt about your abilities?",
+        "Do you feel that you are not performing as well as you should be?",
+        "Have you ever experienced difficulty sleeping due to academic stress?",
     ],
     "Working Professional": [
       "Do you feel emotionally exhausted at the end of the workday?",
-      "How often do you struggle with motivation for work-related tasks?",
-      "Do you find it difficult to disconnect from work during personal time?",
-      "How often do you experience stress due to deadlines and workload?",
-      "Do you feel unappreciated for your contributions at work?",
-      "How frequently do you worry about job security or career growth?",
-      "Do you find it difficult to focus on tasks without getting distracted?",
-      "How often do you experience physical symptoms like headaches due to work stress?",
-      "Do you feel that your work-life balance is unhealthy?",
-      "How frequently do you consider quitting due to mental exhaustion?",
+        "How often do you struggle with motivation for work-related tasks?",
+        "Do you find it difficult to disconnect from work during personal time?",
+        "How often do you experience stress due to deadlines and workload?",
+        "Do you feel unappreciated for your contributions at work?",
+        "How frequently do you worry about job security or career growth?",
+        "Do you find it difficult to focus on tasks without getting distracted?",
+        "How often do you experience physical symptoms like headaches due to work stress?",
+        "Do you feel that your work-life balance is unhealthy?",
+        "How frequently do you consider quitting due to mental exhaustion?",
     ],
     "Housewife/Homemaker": [
       "Do you feel that your daily responsibilities are overwhelming?",
@@ -68,10 +70,9 @@ const MentalHealthAssessment = () => {
     const updatedResponses = [...responses, value];
     setResponses(updatedResponses);
 
-    // Show selected response in chat
     setMessages((prev) => [
       ...prev,
-      { text: options[value-1].label, sender: "user" },
+      { text: options[value - 1].label, sender: "user" },
     ]);
 
     if (currentQuestionIndex < questionsByRole[role].length - 1) {
@@ -89,10 +90,24 @@ const MentalHealthAssessment = () => {
         role,
         responses,
       });
+
+      setPrediction(res.data.prediction);
       setMessages((prev) => [
         ...prev,
-        { text: res.data.message, sender: "bot" },
+        { text: `Prediction: ${res.data.prediction}`, sender: "bot" },
       ]);
+
+      const availableDoctors = [
+        { name: "Dr. Sharma", speciality: "Anxiety" },
+        { name: "Dr. Mehta", speciality: "Depression" },
+        { name: "Dr. Verma", speciality: "Stress Management" },
+      ];
+
+      const matchedDoctors = availableDoctors.filter(
+        (doc) => doc.speciality.toLowerCase() === res.data.prediction.toLowerCase()
+      );
+
+      setDoctors(matchedDoctors);
     } catch (error) {
       console.error("Error sending to backend:", error);
     }
@@ -100,9 +115,7 @@ const MentalHealthAssessment = () => {
 
   const handleRoleSelection = (selectedRole) => {
     setRole(selectedRole);
-    setMessages([
-      { text: questionsByRole[selectedRole][0], sender: "bot" },
-    ]);
+    setMessages([{ text: questionsByRole[selectedRole][0], sender: "bot" }]);
   };
 
   return (
@@ -166,23 +179,41 @@ const MentalHealthAssessment = () => {
                 ))}
               </ScrollToBottom>
 
-              {/* Show Options for the Current Question */}
               {messages.length > 0 &&
                 messages[messages.length - 1].sender === "bot" && (
                   <div className="mt-3 flex justify-center gap-3 flex-wrap">
                     {options.map((option) => (
                       <button
                         key={option.value}
-                        onClick={() =>
-                          handleOptionClick(option.value, option.label)
-                        }
+                        onClick={() => handleOptionClick(option.value)}
                         className="px-4 py-2 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all"
                       >
                         {option.label}
-                      </button> 
+                      </button>
                     ))}
                   </div>
                 )}
+
+              {prediction && (
+                <div className="mt-5 text-center">
+                  <h3 className="text-lg font-semibold text-gray-800">
+                    Suggested Treatment for: <span className="text-red-500">{prediction}</span>
+                  </h3>
+                  {doctors.length > 0 ? (
+                    <div className="mt-3">
+                      <h4 className="text-md font-medium text-gray-700">Recommended Doctor:</h4>
+                      {doctors.map((doc, index) => (
+                        <p key={index} className="text-gray-600">{doc.name} - {doc.speciality}</p>
+                      ))}
+                      <button className="mt-3 px-6 py-3 bg-green-500 text-white rounded-lg text-lg shadow-lg hover:bg-green-600">
+                        Book Appointment
+                      </button>
+                    </div>
+                  ) : (
+                    <p className="text-gray-600">No doctors available for this condition.</p>
+                  )}
+                </div>
+              )}
             </>
           )}
         </div>
