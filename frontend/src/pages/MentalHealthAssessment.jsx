@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import ScrollToBottom from "react-scroll-to-bottom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { AppContext } from "../context/AppContext";
+import { questionsByRole } from "../assets/assets";
 
 const options = [
   { value: 1, label: "😃 Very Low" },
@@ -16,55 +19,11 @@ const MentalHealthAssessment = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [responses, setResponses] = useState([]);
   const [prediction, setPrediction] = useState("");
-  const [doctors, setDoctors] = useState([]);
+  const [isLoading, setIsLoading] = useState(false); // Track loading state
+  const navigate = useNavigate();
 
-  const questionsByRole = {
-    "Student": [
-        "Do you often feel overwhelmed by academic pressure?",
-        "Do you struggle to concentrate during lectures or while studying?",
-        "How often do you feel anxious before exams or assignments?",
-        "Do you experience difficulty balancing academic and personal life?",
-        "Have you lost interest in extracurricular activities you once enjoyed?",
-        "Do you frequently procrastinate on assignments due to mental exhaustion?",
-        "Do you feel socially isolated or disconnected from your peers?",
-        "How often do you experience self-doubt about your abilities?",
-        "Do you feel that you are not performing as well as you should be?",
-        "Have you ever experienced difficulty sleeping due to academic stress?",
-    ],
-    "Working Professional": [
-      "Do you feel emotionally exhausted at the end of the workday?",
-        "How often do you struggle with motivation for work-related tasks?",
-        "Do you find it difficult to disconnect from work during personal time?",
-        "How often do you experience stress due to deadlines and workload?",
-        "Do you feel unappreciated for your contributions at work?",
-        "How frequently do you worry about job security or career growth?",
-        "Do you find it difficult to focus on tasks without getting distracted?",
-        "How often do you experience physical symptoms like headaches due to work stress?",
-        "Do you feel that your work-life balance is unhealthy?",
-        "How frequently do you consider quitting due to mental exhaustion?",
-    ],
-    "Housewife/Homemaker": [
-      "Do you feel that your daily responsibilities are overwhelming?",
-      "How often do you experience feelings of loneliness or isolation?",
-      "Do you feel like you have enough personal time for yourself?",
-      "How do you handle moments of stress or frustration?",
-      "Do you get enough social interaction outside of your home responsibilities?",
-    ],
-    "Healthcare Professional": [
-      "Do you frequently feel emotionally drained after patient interactions?",
-      "How often do you experience stress due to long working hours?",
-      "Do you find it difficult to manage work-related stress in the workplace?",
-      "Do you feel that your mental health is being compromised due to the emotional toll of your job?",
-      "How do you unwind after a stressful shift?",
-    ],
-    "IT Tech Employee": [
-      "How often do you experience stress due to tight project deadlines?",
-      "Do you feel mentally exhausted from coding or troubleshooting issues?",
-      "How do you handle prolonged periods of screen time or sitting at your desk?",
-      "Do you find it challenging to disconnect from work after office hours?",
-      "How often do you experience frustration with technical issues at work?",
-    ],
-  };
+  const { doctors } = useContext(AppContext);
+  const doctorsData = doctors.filter(doc => doc.speciality === "Psychologist ");
 
   const handleOptionClick = (value) => {
     const updatedResponses = [...responses, value];
@@ -75,41 +34,46 @@ const MentalHealthAssessment = () => {
       { text: options[value - 1].label, sender: "user" },
     ]);
 
-    if (currentQuestionIndex < questionsByRole[role].length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1);
-      const nextQuestion = questionsByRole[role][currentQuestionIndex + 1];
-      setMessages((prev) => [...prev, { text: nextQuestion, sender: "bot" }]);
-    } else {
-      sendToBackend(updatedResponses);
-    }
+    // Show loading state before the next question
+    setIsLoading(true);
+
+    setTimeout(() => {
+      if (currentQuestionIndex < questionsByRole[role].length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1);
+        const nextQuestion = questionsByRole[role][currentQuestionIndex + 1];
+        setMessages((prev) => [
+          ...prev,
+          { text: nextQuestion, sender: "bot" },
+        ]);
+        setIsLoading(false); // Stop loading after the next question is shown
+      } else {
+        // Once all questions are answered, send the responses for prediction
+        sendToBackend(updatedResponses);
+      }
+    }, 2000); // Simulate a 2-second delay before moving to the next question
   };
 
   const sendToBackend = async (responses) => {
     try {
-      const res = await axios.post("http://localhost:5000/assess", {
-        role,
+      const res = await axios.post("http://127.0.0.1:5000/assess", {
         responses,
+        role
       });
 
-      setPrediction(res.data.prediction);
+      const predictions = res.data.prediction;
+      const maxPrediction = Object.entries(predictions).reduce((max, [key, value]) => {
+        return value > max.value ? { key, value } : max;
+      }, { key: "", value: 0 });
+
+      setPrediction(maxPrediction.key);
       setMessages((prev) => [
         ...prev,
-        { text: `Prediction: ${res.data.prediction}`, sender: "bot" },
+        { text: `Prediction: ${maxPrediction.key}`, sender: "bot" },
       ]);
-
-      const availableDoctors = [
-        { name: "Dr. Sharma", speciality: "Anxiety" },
-        { name: "Dr. Mehta", speciality: "Depression" },
-        { name: "Dr. Verma", speciality: "Stress Management" },
-      ];
-
-      const matchedDoctors = availableDoctors.filter(
-        (doc) => doc.speciality.toLowerCase() === res.data.prediction.toLowerCase()
-      );
-
-      setDoctors(matchedDoctors);
+      setIsLoading(false); // Stop loading after receiving prediction
     } catch (error) {
       console.error("Error sending to backend:", error);
+      setIsLoading(false); // Stop loading in case of error
     }
   };
 
@@ -162,16 +126,11 @@ const MentalHealthAssessment = () => {
                 {messages.map((msg, index) => (
                   <div
                     key={index}
-                    className={`p-2 ${
-                      msg.sender === "user" ? "text-right" : "text-left"
-                    }`}
+                    className={`p-2 ${msg.sender === "user" ? "text-right" : "text-left"}`}
                   >
                     <span
-                      className={`inline-block p-2 rounded-lg ${
-                        msg.sender === "user"
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-300 text-black"
-                      }`}
+                      className={`inline-block p-2 rounded-lg ${msg.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
+                        }`}
                     >
                       {msg.text}
                     </span>
@@ -179,45 +138,76 @@ const MentalHealthAssessment = () => {
                 ))}
               </ScrollToBottom>
 
-              {messages.length > 0 &&
-                messages[messages.length - 1].sender === "bot" && (
-                  <div className="mt-3 flex justify-center gap-3 flex-wrap">
-                    {options.map((option) => (
-                      <button
-                        key={option.value}
-                        onClick={() => handleOptionClick(option.value)}
-                        className="px-4 py-2 bg-gray-200 rounded-lg shadow-md hover:bg-gray-300 transition-all"
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+              {isLoading && (
+                <div className="text-center mt-4">
+                  <div className="self-start flex space-x-1 p-2">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.6s]"></span>
                   </div>
-                )}
+                </div>
+              )}
 
-              {prediction && (
-                <div className="mt-5 text-center">
-                  <h3 className="text-lg font-semibold text-gray-800">
-                    Suggested Treatment for: <span className="text-red-500">{prediction}</span>
-                  </h3>
-                  {doctors.length > 0 ? (
-                    <div className="mt-3">
-                      <h4 className="text-md font-medium text-gray-700">Recommended Doctor:</h4>
-                      {doctors.map((doc, index) => (
-                        <p key={index} className="text-gray-600">{doc.name} - {doc.speciality}</p>
-                      ))}
-                      <button className="mt-3 px-6 py-3 bg-green-500 text-white rounded-lg text-lg shadow-lg hover:bg-green-600">
-                        Book Appointment
-                      </button>
-                    </div>
-                  ) : (
-                    <p className="text-gray-600">No doctors available for this condition.</p>
-                  )}
+              {!isLoading && messages.length > 0 && messages[messages.length - 1].sender === "bot" && (
+                <div className="mt-3 flex justify-center gap-3 flex-wrap">
+                  {options.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => handleOptionClick(option.value)}
+                      className="px-6 py-3 bg-primary text-white rounded-lg text-lg shadow-lg hover:bg-secondary"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </>
           )}
         </div>
       </div>
+
+      {prediction && (
+        <div className="bg-white p-6 rounded-lg shadow-lg mt-12">
+          <h4 className="text-2xl font-semibold text-center mb-6">
+            Suggested <span className="text-primary">Doctors</span>
+          </h4>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            {doctorsData.map((doctor) => (
+              <div
+                key={doctor._id}
+                className="bg-gray-100 p-4 rounded-lg shadow-md flex flex-col items-center"
+              >
+                <img
+                  className="w-[120px] h-[120px] object-cover rounded-full shadow-md"
+                  src={doctor.image}
+                  alt={doctor.name}
+                />
+                <h5 className="text-lg font-semibold mt-3">{doctor.name}</h5>
+                <p className="text-gray-600">{doctor.speciality}</p>
+
+                {/* Doctor Availability */}
+                <div className="flex items-center mt-2">
+                  <span
+                    className={`w-3 h-3 rounded-full ${doctor.available ? "bg-green-500" : "bg-red-500"
+                      } mr-2`}
+                  ></span>
+                  <span className="text-gray-700">
+                    {doctor.available ? "Available" : "Not Available"}
+                  </span>
+                </div>
+
+                {/* Book Appointment Button */}
+                {doctor.available && (
+                  <button onClick={() => { navigate(`/appointment/${doctor._id}`); window.scrollTo(0, 0) }} className="mt-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-md hover:bg-green-600 transition-all">
+                    Book Appointment
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

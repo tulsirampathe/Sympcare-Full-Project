@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaPaperPlane, FaTimes, FaWindowMaximize, FaWindowMinimize } from "react-icons/fa";
+import { FaPaperPlane, FaTimes, FaWindowMaximize, FaWindowMinimize, FaMicrophone } from "react-icons/fa";
 import Lottie from "lottie-react";
 import chatbotAnimation from "../assets/chatbot.json"; // Keep chatbot animation
+import { useNavigate } from "react-router-dom"; // For page navigation (useNavigate instead of useHistory)
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,11 +14,63 @@ const Chatbot = () => {
   ]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [timeoutId, setTimeoutId] = useState(null);
   const messagesEndRef = useRef(null);
+  const navigate = useNavigate(); // Using useNavigate for page navigation
 
   const toggleChat = () => setIsOpen(!isOpen);
   const toggleMaximize = () => setIsMaximized(!isMaximized);
 
+  // Speech Recognition Setup
+  const recognition = useRef(null);
+
+  useEffect(() => {
+    if (window.SpeechRecognition || window.webkitSpeechRecognition) {
+      recognition.current = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.current.continuous = true;
+      recognition.current.interimResults = true;
+
+      recognition.current.onresult = (event) => {
+        const transcript = event.results[event.resultIndex][0].transcript;
+        setInput(transcript); // Set the transcribed text into the input field
+        clearTimeout(timeoutId); // Clear the previous timeout if there's new input
+        const newTimeoutId = setTimeout(() => {
+          handleVoiceCommand(transcript); // Handle command after 1 second of silence
+        }, 1000); // 1 second timeout
+        setTimeoutId(newTimeoutId);
+      };
+
+      recognition.current.onend = () => {
+        setIsListening(false); // Stop listening after recognition ends
+      };
+    } else {
+      console.log("Speech Recognition API is not supported in this browser.");
+    }
+  }, [timeoutId]);
+
+  // Handle Voice Commands
+  const handleVoiceCommand = (command) => {
+    setMessages((prev) => [...prev, { sender: "user", text: command }]);
+    setInput("");
+
+    // Basic command handling
+    if (command.toLowerCase().includes("home page")) {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Navigating to Home..." }]);
+      navigate("/home"); // Use useNavigate to navigate
+    } else if (command.toLowerCase().includes("appointments")) {
+      setMessages((prev) => [...prev, { sender: "bot", text: "Opening Appointment page..." }]);
+      navigate("/appointments");
+    } else {
+      sendMessage(command); // Fallback to normal message sending
+    }
+
+    // Stop listening after recognizing the command
+    recognition.current.stop();
+    setIsListening(false);
+  };
+
+  // Send message handler
   const sendMessage = async (message) => {
     if (!message.trim()) return;
     setMessages((prev) => [...prev, { sender: "user", text: message }]);
@@ -33,15 +86,46 @@ const Chatbot = () => {
       const data = await response.json();
       setMessages((prev) => [...prev, { sender: "bot", text: data.response }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { sender: "bot", text: "⚠ Error: Unable to reach server!" }]);
+      setMessages((prev) => [
+        ...prev,
+        { sender: "bot", text: "⚠ Error: Unable to reach server! Please try again later." },
+      ]);
     } finally {
       setIsThinking(false);
     }
   };
 
+  // Start/Stop Listening
+  const toggleListening = () => {
+    if (isListening) {
+      recognition.current.stop(); // Stop listening
+    } else {
+      recognition.current.start(); // Start listening
+    }
+    setIsListening(!isListening);
+  };
+
+  // Scroll to the latest message
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      const isAtBottom = messagesEndRef.current.getBoundingClientRect().bottom <= window.innerHeight;
+      if (isAtBottom) {
+        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }
   }, [messages, isThinking]);
+
+  // Speech Feedback
+  const speakResponse = (text) => {
+    const speech = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(speech);
+  };
+
+  useEffect(() => {
+    if (messages.length > 0 && messages[messages.length - 1].sender === "bot") {
+      speakResponse(messages[messages.length - 1].text);
+    }
+  }, [messages]);
 
   return (
     <div className={`${isMaximized ? "fixed inset-0 flex justify-center items-center z-50" : "fixed bottom-5 right-5 z-50"}`}>
@@ -101,6 +185,11 @@ const Chatbot = () => {
             />
             <button onClick={() => sendMessage(input)} className="bg-primary text-white px-4 py-2 rounded-lg">
               <FaPaperPlane />
+            </button>
+
+            {/* Microphone Button */}
+            <button onClick={toggleListening} className="bg-primary text-white px-4 py-2 rounded-lg ml-2">
+              <FaMicrophone />
             </button>
           </div>
         </motion.div>
