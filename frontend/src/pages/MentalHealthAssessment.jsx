@@ -1,39 +1,117 @@
 import React, { useState } from "react";
 import ScrollToBottom from "react-scroll-to-bottom";
+import axios from 'axios';
 
 const MentalHealthAssessment = () => {
   const [messages, setMessages] = useState([
     { text: "Hello! How are you feeling today? 😊", sender: "bot" },
   ]);
   const [input, setInput] = useState("");
+  const [role, setRole] = useState(""); // State for role
+  const [loading, setLoading] = useState(false); // Loading state
+  const [error, setError] = useState(""); // Error handling state
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0); // Track question index
+  const [responses, setResponses] = useState([]); // Store responses
+
+  const questionsByRole = {
+    "Student": [
+        "Do you often feel overwhelmed by academic pressure?",
+        "Do you struggle to concentrate during lectures or while studying?",
+        "How often do you feel anxious before exams or assignments?",
+        "Do you experience difficulty balancing academic and personal life?",
+        "Have you lost interest in extracurricular activities you once enjoyed?",
+        "Do you frequently procrastinate on assignments due to mental exhaustion?",
+        "Do you feel socially isolated or disconnected from your peers?",
+        "How often do you experience self-doubt about your abilities?",
+        "Do you feel that you are not performing as well as you should be?",
+        "Have you ever experienced difficulty sleeping due to academic stress?",
+    ],
+    "Working Professional": [
+      "Do you feel emotionally exhausted at the end of the workday?",
+        "How often do you struggle with motivation for work-related tasks?",
+        "Do you find it difficult to disconnect from work during personal time?",
+        "How often do you experience stress due to deadlines and workload?",
+        "Do you feel unappreciated for your contributions at work?",
+        "How frequently do you worry about job security or career growth?",
+        "Do you find it difficult to focus on tasks without getting distracted?",
+        "How often do you experience physical symptoms like headaches due to work stress?",
+        "Do you feel that your work-life balance is unhealthy?",
+        "How frequently do you consider quitting due to mental exhaustion?",
+    ],
+    "Housewife/Homemaker": [
+      "Do you feel that your daily responsibilities are overwhelming?",
+      "How often do you experience feelings of loneliness or isolation?",
+      "Do you feel like you have enough personal time for yourself?",
+      "How do you handle moments of stress or frustration?",
+      "Do you get enough social interaction outside of your home responsibilities?",
+    ],
+    "Healthcare Professional": [
+      "Do you frequently feel emotionally drained after patient interactions?",
+      "How often do you experience stress due to long working hours?",
+      "Do you find it difficult to manage work-related stress in the workplace?",
+      "Do you feel that your mental health is being compromised due to the emotional toll of your job?",
+      "How do you unwind after a stressful shift?",
+    ],
+    "IT Tech Employee": [
+      "How often do you experience stress due to tight project deadlines?",
+      "Do you feel mentally exhausted from coding or troubleshooting issues?",
+      "How do you handle prolonged periods of screen time or sitting at your desk?",
+      "Do you find it challenging to disconnect from work after office hours?",
+      "How often do you experience frustration with technical issues at work?",
+    ],
+  };
 
   const handleSend = () => {
     if (!input.trim()) return;
 
     const userMessage = { text: input, sender: "user" };
-    setMessages([...messages, userMessage]);
-    setInput("");
+    setMessages((prev) => [...prev, userMessage]);
+    setInput(""); // Reset input field
 
-    setTimeout(() => {
-      const botResponse = getBotResponse(input);
-      setMessages((prev) => [...prev, { text: botResponse, sender: "bot" }]);
-    }, 1000);
+    // Save the user's response
+    const updatedResponses = [...responses, input];
+    setResponses(updatedResponses);
+
+    // Move to the next question or finish the assessment
+    if (currentQuestionIndex < questionsByRole[role].length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1);
+      const nextQuestion = questionsByRole[role][currentQuestionIndex + 1];
+      setMessages((prev) => [...prev, { text: nextQuestion, sender: "bot" }]);
+    } else {
+      // All questions answered, send responses to backend
+      sendToBackend(updatedResponses);
+    }
   };
 
-  const getBotResponse = (message) => {
-    message = message.toLowerCase();
-    if (message.includes("sad") || message.includes("depressed"))
-      return "I'm here for you. Try to talk to a friend or take a deep breath. 💙";
-    if (message.includes("happy"))
-      return "That's great to hear! Keep smiling. 😃";
-    if (message.includes("stress") || message.includes("anxious"))
-      return "Take a deep breath. Try meditation or a short walk. 🌿";
-    return "I understand. Feel free to share more. 💬";
+  const sendToBackend = async (responses) => {
+    try {
+      setLoading(true);
+      const res = await axios.post("http://localhost:5000/assess", { role, responses });
+      setMessages((prev) => [...prev, { text: res.data.message, sender: "bot" }]);
+    } catch (error) {
+      setError("Sorry, something went wrong. Please try again later.");
+      console.error("Error sending to backend:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRoleSelection = (selectedRole) => {
+    setRole(selectedRole);
+    setMessages((prev) => [
+      ...prev,
+      { text: `You have selected the role: ${selectedRole}. Let's start chatting! 😊`, sender: "bot" },
+    ]);
+    // Start the conversation with the first question
+    const firstQuestion = questionsByRole[selectedRole][0];
+    setMessages((prev) => [
+      ...prev,
+      { text: firstQuestion, sender: "bot" },
+    ]);
   };
 
   return (
     <div className="px-6 md:px-12 lg:px-24">
-      {/* Section Title */}
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-800">
           CHAT WITH <span className="text-blue-600">US</span>
@@ -41,10 +119,7 @@ const MentalHealthAssessment = () => {
         <p className="text-gray-600 mt-2">We're here to support you!</p>
       </div>
 
-      {/* Content Section */}
       <div className="mt-12 flex flex-col md:flex-row items-center gap-12">
-        
-        {/* Image Section (GIF) */}
         <div className="md:w-1/2 flex justify-center">
           <img
             className="w-full max-w-md rounded-lg shadow-xl hover:scale-105 transition-transform duration-300"
@@ -53,39 +128,61 @@ const MentalHealthAssessment = () => {
           />
         </div>
 
-        {/* Chatbox Section */}
         <div className="md:w-1/2 bg-white shadow-lg rounded-lg p-6">
           <h3 className="text-xl font-semibold text-gray-800 text-center">
-            Mental <span className="text-primary"> Health Chatbot</span>
+            Mental <span className="text-primary">Health Chatbot</span>
           </h3>
           <ScrollToBottom className="h-80 overflow-y-auto border p-3 mt-3 rounded bg-gray-100">
             {messages.map((msg, index) => (
               <div key={index} className={`p-2 ${msg.sender === "user" ? "text-right" : "text-left"}`}>
                 <span
-                  className={`inline-block p-2 rounded-lg ${
-                    msg.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
-                  }`}
+                  className={`inline-block p-2 rounded-lg ${msg.sender === "user" ? "bg-blue-500 text-white" : "bg-gray-300 text-black"}`}
                 >
                   {msg.text}
                 </span>
               </div>
             ))}
           </ScrollToBottom>
-          <div className="flex items-center mt-3">
-            <input
-              type="text"
-              className="w-full border p-2 rounded-lg"
-              placeholder="Type a message..."
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-            />
-            <button className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg" onClick={handleSend}>
-              Send
-            </button>
-          </div>
-        </div>
 
+          {/* Role selection buttons */}
+          {!role && (
+            <div className="mt-4 text-center">
+              <p className="text-gray-700 mb-2">Please select your role:</p>
+              <div className="flex justify-center gap-4 flex-wrap">
+                {Object.keys(questionsByRole).map((role) => (
+                  <button
+                    key={role}
+                    className="px-6 py-3 bg-blue-500 text-white rounded-lg text-lg shadow-lg hover:bg-blue-600 transition-all duration-200 transform hover:scale-105"
+                    onClick={() => handleRoleSelection(role)}
+                  >
+                    {role}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Chat input and send */}
+          {role && (
+            <>
+              <div className="flex items-center mt-3">
+                <input
+                  type="text"
+                  className="w-full border p-2 rounded-lg"
+                  placeholder="Type a message..."
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSend()}
+                />
+                <button className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-lg" onClick={handleSend}>
+                  Send
+                </button>
+              </div>
+              {loading && <div className="text-center mt-3">Loading...</div>}
+              {error && <div className="text-center mt-3 text-red-500">{error}</div>}
+            </>
+          )}
+        </div>
       </div>
     </div>
   );
