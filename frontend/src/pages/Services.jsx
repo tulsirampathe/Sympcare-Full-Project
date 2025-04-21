@@ -1,6 +1,11 @@
 import { motion } from "framer-motion";
 import React from "react";
-import { FaCalendarCheck, FaHeartbeat, FaStethoscope, FaUserMd } from "react-icons/fa";
+import {
+  FaCalendarCheck,
+  FaHeartbeat,
+  FaStethoscope,
+  FaUserMd,
+} from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
 
@@ -10,11 +15,10 @@ const Services = () => {
   const services = [
     {
       title: "AI-Powered Mental Wellness",
-      text: "Experience 24/7 AI-driven emotional support, personalized mental health assessments, and instant professional insights for holistic well-being.",
-      icon: <FaUserMd className="text-6xl text-blue-600" />, 
+      text: "Receive 24/7 emotional support, mood tracking, and personalized mental well-being tips — powered by our intelligent Ayurveda-guided AI assistant.",
+      icon: <FaUserMd className="text-6xl text-blue-600" />,
       route: "/health-assessment",
-    }
-    ,
+    },
     {
       title: "Comprehensive Health Assessments",
       text: "Get accurate symptom analysis and initial diagnosis guidance.",
@@ -50,8 +54,8 @@ const Services = () => {
           Mental Health<span className="text-primary"> AI Assistant</span>
         </h2>
         <p className="text-gray-600 max-w-3xl mx-auto text-lg">
-          Revolutionizing mental healthcare through AI-powered emotional support
-          and instant psychological assessments.
+          Embrace holistic wellness powered by AI and Ayurveda – your digital
+          guide for balanced living.
         </p>
       </motion.div>
 
