@@ -6,6 +6,7 @@ import { assets } from "../assets/assets";
 const SymptomAnalysis = () => {
   const [symptoms, setSymptoms] = useState(["", "", "", "", ""]);
   const [prediction, setPrediction] = useState(null);
+  const [wikiInfo, setWikiInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [name, setName] = useState("");
@@ -15,6 +16,31 @@ const SymptomAnalysis = () => {
     updatedSymptoms[index] = value;
     setSymptoms(updatedSymptoms);
   };
+
+  const fetchWikipediaInfo = async (disease) => {
+    const possibleTitles = [
+      `${disease} (Ayurveda)`,
+      `Ayurveda and ${disease}`,
+      `Ayurvedic treatment for ${disease}`,
+      `${disease} Ayurveda`,
+      `${disease}`,
+    ];
+
+    for (const title of possibleTitles) {
+      try {
+        const res = await fetch(
+          `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(title)}`
+        );
+        const data = await res.json();
+        setWikiInfo(data)
+      } catch (err) {
+        console.warn("Failed to fetch Wikipedia for:", title);
+      }
+    }
+
+    return null;
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,6 +55,7 @@ const SymptomAnalysis = () => {
 
     setLoading(true);
     setError(null);
+    setWikiInfo(null);
 
     const formData = new FormData();
     symptoms.forEach((symptom, index) => {
@@ -36,13 +63,13 @@ const SymptomAnalysis = () => {
     });
 
     try {
-      console.log("Submitting symptoms:", symptoms);
       const response = await axios.post(
         "http://127.0.0.1:5000/symptoms-predict",
         formData
       );
       const disease = response.data["Most Accurate Disease"];
       setPrediction(diseaseInfo[disease]);
+      fetchWikipediaInfo(disease);
     } catch (error) {
       console.error(
         "Error predicting disease:",
@@ -53,6 +80,8 @@ const SymptomAnalysis = () => {
       setLoading(false);
     }
   };
+
+  fetchWikipediaInfo("Fever");
 
   return (
     <div className="max-w-5xl mx-auto p-6">
@@ -136,8 +165,40 @@ const SymptomAnalysis = () => {
                 Medical Overview:
               </h5>
               <p className="text-gray-600">{prediction.description}</p>
-              <h5 className="text-xl font-semibold text-primary">Treatment:</h5>
+              <h5 className="text-xl font-semibold text-primary">
+                Treatment:
+              </h5>
               <p className="text-gray-600">{prediction.treatment}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Wikipedia Info */}
+      {wikiInfo && (
+        <div className="mt-12 bg-blue-50 p-6 rounded-lg shadow-md">
+          <h3 className="text-2xl font-semibold mb-4 text-blue-700">
+            Additional Info from Wikipedia
+          </h3>
+          <div className="flex flex-col md:flex-row items-start gap-6">
+            {wikiInfo.thumbnail && (
+              <img
+                src={wikiInfo.thumbnail.source}
+                alt={wikiInfo.title}
+                className="w-48 h-auto rounded-lg shadow"
+              />
+            )}
+            <div>
+              <h4 className="text-xl font-bold text-blue-800">{wikiInfo.title}</h4>
+              <p className="text-gray-700 mt-2">{wikiInfo.extract}</p>
+              <a
+                href={wikiInfo.content_urls.desktop.page}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block mt-4 text-blue-600 underline hover:text-blue-800"
+              >
+                Read more on Wikipedia →
+              </a>
             </div>
           </div>
         </div>

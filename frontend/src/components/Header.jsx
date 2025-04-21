@@ -7,14 +7,14 @@ const Header = () => {
       {/* --------- Header Left --------- */}
       <div className="md:w-1/2 flex flex-col items-start justify-center gap-4 py-10 m-auto md:py-[10vw] md:mb-[-30px]">
         <p className="text-3xl md:text-4xl lg:text-5xl text-white font-semibold leading-tight md:leading-tight lg:leading-tight">
-          SympCare – Your Complete Digital Health Companion
+          {/* SympCare – Your Complete Digital Health Companion */}
+          SympCare – Your AI Ayurveda Wellness Guide
         </p>
         <div className="flex flex-col md:flex-row items-center gap-3 text-white text-sm font-light">
           <img className="w-28" src={assets.group_profiles} alt="" />
           <p>
-            Empowering you with AI-driven health assessments, skin disease
-            <br className="hidden sm:block" /> detection, mental well-being
-            support, and seamless doctor consultations—all in one place.
+            Bringing together ancient healing methods and <br className="hidden sm:block" />
+            modern technology to keep you healthy and happy.
           </p>
         </div>
         <a
