@@ -2,14 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
 import { FaPaperPlane, FaTimes, FaWindowMaximize, FaWindowMinimize, FaMicrophone } from "react-icons/fa";
 import Lottie from "lottie-react";
-import chatbotAnimation from "../assets/chatbot.json"; // Keep chatbot animation
-import { useNavigate } from "react-router-dom"; // For page navigation (useNavigate instead of useHistory)
+import chatbotAnimation from "../assets/chatbot.json";
+import { useNavigate } from "react-router-dom";
 
 const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: "bot", text: "👋 Welcome to *SympCare AI* - Your Healthcare Assistant!" },
+    { sender: "bot", text: "👋 Welcome to SympCare - Your Healthcare Assistant!" },
     { sender: "bot", text: "How can I help you today? 😊" },
   ]);
   const [input, setInput] = useState("");
@@ -17,12 +17,11 @@ const Chatbot = () => {
   const [isListening, setIsListening] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate(); // Using useNavigate for page navigation
+  const navigate = useNavigate(); 
 
   const toggleChat = () => setIsOpen(!isOpen);
   const toggleMaximize = () => setIsMaximized(!isMaximized);
 
-  // Speech Recognition Setup
   const recognition = useRef(null);
 
   useEffect(() => {

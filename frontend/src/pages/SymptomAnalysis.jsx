@@ -26,20 +26,24 @@ const SymptomAnalysis = () => {
       setError("Please select at least one symptom.");
       return;
     }
-
+  
     setLoading(true);
     setError(null);
-
-    const formData = new FormData();
-    symptoms.forEach((symptom, index) => {
-      formData.append(`Symptom${index + 1}`, symptom);
-    });
-
+  
+    const formData = {
+      symptoms: symptoms.filter((symptom) => symptom), // Remove empty values
+    };
+  
     try {
-      console.log("Submitting symptoms:", symptoms);
+      console.log("Submitting symptoms:", formData);
       const response = await axios.post(
         "http://127.0.0.1:5000/symptoms-predict",
-        formData
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json", // Explicitly set JSON content type
+          },
+        }
       );
       const disease = response.data["Most Accurate Disease"];
       setPrediction(diseaseInfo[disease]);
@@ -53,6 +57,7 @@ const SymptomAnalysis = () => {
       setLoading(false);
     }
   };
+  
 
   return (
     <div className="max-w-5xl mx-auto p-6">

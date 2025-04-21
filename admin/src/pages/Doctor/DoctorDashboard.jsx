@@ -111,9 +111,9 @@ const DoctorDashboard = () => {
         </div>
 
         {/* Left Side - SMS Section */}
-        <div className="ml-9">
+        {/* <div className="ml-9">
           <SendSmsSection />
-        </div>
+        </div> */}
       </div>
     )
   );
