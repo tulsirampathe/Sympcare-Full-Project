@@ -5,7 +5,9 @@ import { symptomsList, diseaseInfo } from "../data/data";
 import { assets } from "../assets/assets";
 
 const API_KEY_PIXABAY = "49856975-b50f4f2288e42fd6f79dc9c5d";
-const GEMINI_API_KEY = "AIzaSyBadJ5jdznsttPKQLyrDzZTEbSNvKzTt4U"; // 🔒 Replace with your actual API key
+const GEMINI_API_KEY = "AIzaSyBadJ5jdznsttPKQLyrDzZTEbSNvKzTt4U";
+const CLIENT_ID = "96dHZVzsAuvt6NmPgxoDEWZd3cf-yuzS2rtf_djNd-EUkZ8rMSeX6K3JJWYvsfVOgWqqDeNfDe3NmvLzIlSNANLJ-qVkQ7Si"
+const CLIENT_SECRET = "lrFxI-iSEg9BD5sPyqkzgbpLesAyQFizGq2jV1Is_s5Ffdv87JjQKoVt8Z6s9jSksBvjsskal5qio_7DqbsfGNj2RK7hnqUxkEHDsNI6Oxc="
 
 const SymptomAnalysis = () => {
   const [symptoms, setSymptoms] = useState(["", "", "", "", ""]);
@@ -15,9 +17,10 @@ const SymptomAnalysis = () => {
   const [herbImages, setHerbImages] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
   const [loadingRemedies, setLoadingRemedies] = useState(false);
-
+  const [centers, setCenters] = useState([]);
+  const [loadingCenters, setLoadingCenters] = useState(false);
+  const [location, setLocation] = useState(null);
 
   const handleChange = (index, value) => {
     const updatedSymptoms = [...symptoms];
@@ -36,7 +39,6 @@ const SymptomAnalysis = () => {
 
     setLoading(true);
     try {
-      // Step 1: Get disease prediction from your Flask API
       const response = await axios.post("http://127.0.0.1:5000/symptoms-predict", {
         name,
         symptoms,
@@ -45,9 +47,8 @@ const SymptomAnalysis = () => {
       const predictedDisease = response.data["Most Accurate Disease"];
       const diseaseDetails = diseaseInfo[predictedDisease];
       setPrediction(diseaseDetails);
-
-      // Step 2: Get Ayurvedic treatment dynamically using OpenAI
       await fetchAyurvedicRemedies(predictedDisease);
+      getLocationAndFetch();
     } catch (err) {
       console.error(err);
       setError("Prediction failed. Make sure the backend and API keys are working.");
@@ -152,6 +153,52 @@ const SymptomAnalysis = () => {
     }
     setHerbImages(images);
   };
+
+  const getLocationAndFetch = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setLoadingCenters(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        setLocation({ lat, lon });
+        fetchCentersFromBackend(lat, lon);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Unable to retrieve your location.");
+        setLoadingCenters(false);
+      }
+    );
+  };
+
+  const fetchCentersFromBackend = async (lat, lon) => {
+    try {
+      const response = await axios.get("http://localhost:5000/fetchAyurvedicCenters", {
+        params: { lat, lon },
+      });
+
+      const formatted = response.data.map((item) => ({
+        name: item.name,
+        address: item.address,
+        distance: item.distance,
+      }));
+
+      setCenters(formatted);
+    } catch (error) {
+      console.error("Error fetching centers from backend:", error);
+      alert("Something went wrong while fetching Ayurvedic centers.");
+    } finally {
+      setLoadingCenters(false);
+    }
+  };
+
+
 
   return (
     <div className="max-w-6xl mx-auto p-6">
@@ -307,6 +354,48 @@ const SymptomAnalysis = () => {
         </div>
       )}
 
+
+
+      {location && (
+        <div className="mt-6 p-4 bg-blue-100 rounded shadow">
+          {loadingCenters && <p>Loading centers...</p>}
+          {!loadingCenters && centers.length > 0 && (
+
+            <div className="mt-12 bg-white p-6 rounded-lg shadow-lg">
+              <h3 className="text-2xl font-semibold mb-4 text-center">
+                Nearby Ayurvedic Centers
+              </h3>
+              <div className="grid md:grid-cols-2 gap-4">
+                {centers.map((center, idx) => (
+                  <div
+                    key={idx}
+                    className="p-4 border rounded-lg hover:shadow-md transition duration-200 bg-gray-50"
+                  >
+                    <h4 className="text-lg font-bold text-blue-700">{center.name}</h4>
+                    <p className="text-sm text-gray-600">{center.address}</p>
+                    <p className="text-sm text-green-600 mt-1">~ {center.distance/1000} km away</p>
+                    <button
+                      onClick={() =>
+                        window.open(
+                          `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                            center.name
+                          )}`,
+                          "_blank"
+                        )
+                      }
+                      className="mt-3 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                    >
+                      View on Google Maps
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!loadingCenters && centers.length === 0 && <p>No Ayurvedic centers found nearby.</p>}
+        </div>
+      )}
     </div>
   );
 };
