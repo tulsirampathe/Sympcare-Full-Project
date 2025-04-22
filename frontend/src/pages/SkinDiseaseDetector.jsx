@@ -11,10 +11,10 @@ const SkinDiseaseDetector = () => {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
 
-    const { doctors } = useContext(AppContext)
+  const { doctors } = useContext(AppContext)
 
-    const navigate = useNavigate()
-  
+  const navigate = useNavigate()
+
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -149,8 +149,7 @@ const SkinDiseaseDetector = () => {
 
             {/* Alert Message */}
             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-3 mt-4 rounded-md">
-              ⚠️ This is only an ML prediction and may not be 100% accurate.
-              Please consult a doctor for professional medical advice.
+              ⚠️ This is an AI and an ML prediction and may not be 100% accurate. Please consult a doctor for final confirmation.
             </div>
           </div>
 

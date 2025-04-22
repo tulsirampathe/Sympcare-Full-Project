@@ -41,6 +41,7 @@ import Neurologist from "./Neurologist.svg";
 import Pediatricians from "./Pediatricians.svg";
 import predict_result from './predict_result.png'
 import Mental_Health  from './Mental Health AI Assistant.png'
+import defaultHerbImage from './defaultHerbImage.jpg'
 
 export const assets = {
   Mental_Health,
@@ -63,7 +64,8 @@ export const assets = {
   stripe_logo,
   razorpay_logo,
   Skin_Disease_img,
-  predict_result
+  predict_result,
+  defaultHerbImage
 };
 
 export const specialityData = [
