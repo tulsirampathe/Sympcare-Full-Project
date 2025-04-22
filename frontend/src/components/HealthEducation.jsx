@@ -140,6 +140,7 @@ const AyurvedicHealthEducation = () => {
             className="border p-6 rounded-lg bg-white text-center shadow-md hover:bg-lime-100 transition duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            
           >
             {item.image ? (
               <img

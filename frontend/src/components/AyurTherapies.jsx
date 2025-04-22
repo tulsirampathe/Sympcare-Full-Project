@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const API_KEY = "49856975-b50f4f2288e42fd6f79dc9c5d";
 
 const staticData = [
 
   // Ayurvedic Treatments
-  
     {
       title: "Abhyanga (Ayurvedic Oil Treatment) 🛀",
       description: "A full-body warm oil massage that improves circulation, reduces muscle stiffness, and promotes relaxation.",
@@ -86,6 +86,7 @@ const staticData = [
 
 const AyurTherapies = () => {
   const [remedies, setRemedies] = useState([]);
+const navigate = useNavigate();
 
   useEffect(() => {
   const fetchImages = async () => {
@@ -130,7 +131,8 @@ const AyurTherapies = () => {
             className="border p-6 rounded-lg bg-white text-center shadow-md hover:bg-lime-100 transition duration-300"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-          >
+            onClick={() => navigate("/therapie", { state: { therapy: item } })}
+            >
             {item.image ? (
               <img
                 src={item.image}
