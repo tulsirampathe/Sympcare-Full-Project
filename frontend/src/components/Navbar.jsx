@@ -55,7 +55,7 @@ const Navbar = () => {
         <NavLink to="/health-education">
           <li className="py-1">HEALTH-EDUCATION</li>
         </NavLink>
-        
+
         {/* <NavLink to="/about">
           <li className="py-1">ABOUT</li>
         </NavLink>
@@ -128,14 +128,17 @@ const Navbar = () => {
             <NavLink onClick={() => setShowMenu(false)} to="/">
               <p className="px-4 py-2">HOME</p>
             </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/doctors">
-              <p className="px-4 py-2">ALL DOCTORS</p>
-            </NavLink>
             <NavLink onClick={() => setShowMenu(false)} to="/services">
               <p className="px-4 py-2">SERVICES</p>
             </NavLink>
+            <NavLink onClick={() => setShowMenu(false)} to="/doctors">
+              <p className="px-4 py-2">ALL-DOCTORS</p>
+            </NavLink>
+            <NavLink onClick={() => setShowMenu(false)} to="/ayur-therapies">
+              <li className="px-4 py-2">AYUR-THERAPIES</li>
+            </NavLink>
             <NavLink onClick={() => setShowMenu(false)} to="/health-education">
-              <p className="px-4 py-2">HEALTH EDUCATION</p>
+              <p className="px-4 py-2">HEALTH-EDUCATION</p>
             </NavLink>
             <NavLink onClick={() => setShowMenu(false)} to="/about">
               <p className="px-4 py-2">ABOUT</p>
