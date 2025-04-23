@@ -6,8 +6,7 @@ import { assets } from "../assets/assets";
 
 const API_KEY_PIXABAY = "49856975-b50f4f2288e42fd6f79dc9c5d";
 const GEMINI_API_KEY = "AIzaSyBadJ5jdznsttPKQLyrDzZTEbSNvKzTt4U";
-const CLIENT_ID = "96dHZVzsAuvt6NmPgxoDEWZd3cf-yuzS2rtf_djNd-EUkZ8rMSeX6K3JJWYvsfVOgWqqDeNfDe3NmvLzIlSNANLJ-qVkQ7Si"
-const CLIENT_SECRET = "lrFxI-iSEg9BD5sPyqkzgbpLesAyQFizGq2jV1Is_s5Ffdv87JjQKoVt8Z6s9jSksBvjsskal5qio_7DqbsfGNj2RK7hnqUxkEHDsNI6Oxc="
+
 
 const SymptomAnalysis = () => {
   const [symptoms, setSymptoms] = useState(["", "", "", "", ""]);

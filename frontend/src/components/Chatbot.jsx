@@ -1,6 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { FaPaperPlane, FaTimes, FaWindowMaximize, FaWindowMinimize, FaMicrophone } from "react-icons/fa";
+import {
+  FaPaperPlane,
+  FaTimes,
+  FaWindowMaximize,
+  FaWindowMinimize,
+  FaMicrophone,
+} from "react-icons/fa";
 import Lottie from "lottie-react";
 import chatbotAnimation from "../assets/chatbot.json";
 import { useNavigate } from "react-router-dom";
@@ -17,12 +23,21 @@ const Chatbot = () => {
   const [isListening, setIsListening] = useState(false);
   const [timeoutId, setTimeoutId] = useState(null);
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate(); 
-
-  const toggleChat = () => setIsOpen(!isOpen);
-  const toggleMaximize = () => setIsMaximized(!isMaximized);
+  const navigate = useNavigate();
 
   const recognition = useRef(null);
+
+  const toggleChat = () => {
+    const newState = !isOpen;
+    setIsOpen(newState);
+
+    if (newState && recognition.current && !isListening) {
+      recognition.current.start();
+      setIsListening(true);
+    }
+  };
+
+  const toggleMaximize = () => setIsMaximized(!isMaximized);
 
   useEffect(() => {
     if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -32,46 +47,48 @@ const Chatbot = () => {
 
       recognition.current.onresult = (event) => {
         const transcript = event.results[event.resultIndex][0].transcript;
-        setInput(transcript); // Set the transcribed text into the input field
-        clearTimeout(timeoutId); // Clear the previous timeout if there's new input
+        setInput(transcript);
+        clearTimeout(timeoutId);
         const newTimeoutId = setTimeout(() => {
-          handleVoiceCommand(transcript); // Handle command after 1 second of silence
-        }, 1000); // 1 second timeout
+          handleVoiceCommand(transcript);
+        }, 1000);
         setTimeoutId(newTimeoutId);
       };
 
       recognition.current.onend = () => {
-        setIsListening(false); // Stop listening after recognition ends
+        setIsListening(false);
       };
     } else {
       console.log("Speech Recognition API is not supported in this browser.");
     }
   }, [timeoutId]);
 
-  // Handle Voice Commands
   const handleVoiceCommand = (command) => {
     setMessages((prev) => [...prev, { sender: "user", text: command }]);
     setInput("");
 
-    // Basic command handling
     if (command.toLowerCase().includes("home page")) {
       setMessages((prev) => [...prev, { sender: "bot", text: "Navigating to Home..." }]);
-      navigate("/home"); // Use useNavigate to navigate
+      navigate("/home");
     } else if (command.toLowerCase().includes("appointments")) {
       setMessages((prev) => [...prev, { sender: "bot", text: "Opening Appointment page..." }]);
       navigate("/appointments");
     } else {
-      sendMessage(command); // Fallback to normal message sending
+      sendMessage(command);
     }
 
-    // Stop listening after recognizing the command
     recognition.current.stop();
     setIsListening(false);
   };
 
-  // Send message handler
   const sendMessage = async (message) => {
     if (!message.trim()) return;
+
+    if (isListening && recognition.current) {
+      recognition.current.stop();
+      setIsListening(false);
+    }
+
     setMessages((prev) => [...prev, { sender: "user", text: message }]);
     setInput("");
     setIsThinking(true);
@@ -94,43 +111,84 @@ const Chatbot = () => {
     }
   };
 
-  // Start/Stop Listening
-  const toggleListening = () => {
-    if (isListening) {
-      recognition.current.stop(); // Stop listening
-    } else {
-      recognition.current.start(); // Start listening
-    }
-    setIsListening(!isListening);
-  };
-
-  // Scroll to the latest message
   useEffect(() => {
     if (messagesEndRef.current) {
-      const isAtBottom = messagesEndRef.current.getBoundingClientRect().bottom <= window.innerHeight;
+      const isAtBottom =
+        messagesEndRef.current.getBoundingClientRect().bottom <= window.innerHeight;
       if (isAtBottom) {
         messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
       }
     }
   }, [messages, isThinking]);
 
-  // Speech Feedback
+  const [voices, setVoices] = useState([]);
+
+  useEffect(() => {
+    const synth = window.speechSynthesis;
+
+    const loadVoices = () => {
+      const availableVoices = synth.getVoices();
+      setVoices(availableVoices);
+    };
+
+    loadVoices();
+    if (synth.onvoiceschanged !== undefined) {
+      synth.onvoiceschanged = loadVoices;
+    }
+  }, []);
+
   const speakResponse = (text) => {
-    const speech = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(speech);
+    const synth = window.speechSynthesis;
+    synth.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    const isHindi = /[\u0900-\u097F]/.test(text);
+    const selectedVoice = voices.find((voice) =>
+      isHindi
+        ? voice.lang === "hi-IN" || voice.name.toLowerCase().includes("hindi")
+        : voice.lang.startsWith("en") || voice.name.toLowerCase().includes("english")
+    );
+
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
+    synth.speak(utterance);
   };
 
   useEffect(() => {
-    if (messages.length > 0 && messages[messages.length - 1].sender === "bot") {
+    if (
+      messages.length > 0 &&
+      messages[messages.length - 1].sender === "bot" &&
+      voices.length > 0
+    ) {
       speakResponse(messages[messages.length - 1].text);
     }
-  }, [messages]);
+  }, [messages, voices]);
+
+  const toggleListening = () => {
+    if (recognition.current) {
+      if (isListening) {
+        recognition.current.stop();
+        setIsListening(false);
+      } else {
+        recognition.current.start();
+        setIsListening(true);
+      }
+    }
+  };
 
   return (
-    <div className={`${isMaximized ? "fixed inset-0 flex justify-center items-center z-50" : "fixed bottom-5 right-5 z-50"}`}>
+    <div
+      className={`${
+        isMaximized
+          ? "fixed inset-0 flex justify-center items-center z-50"
+          : "fixed bottom-5 right-5 z-50"
+      }`}
+    >
       {isOpen ? (
         <motion.div className="w-full max-w-lg h-[90vh] max-h-[600px] bg-white shadow-2xl rounded-2xl flex flex-col border border-gray-200">
-          {/* Chatbot Header */}
+          {/* Header */}
           <div className="bg-primary p-4 flex justify-between items-center rounded-t-2xl">
             <h3 className="text-white text-lg font-bold">SympCare AI Assistant</h3>
             <div className="flex space-x-3">
@@ -143,15 +201,20 @@ const Chatbot = () => {
             </div>
           </div>
 
-          {/* Chat Messages */}
+          {/* Messages */}
           <div className="p-4 h-full overflow-y-auto flex flex-col space-y-3 bg-gray-50">
             {messages.map((msg, index) => (
-              <motion.div key={index} className={`max-w-xs p-3 rounded-lg shadow-md ${msg.sender === "bot" ? "bg-primary text-white self-start" : "bg-blue-500 text-white self-end"}`}>
+              <motion.div
+                key={index}
+                className={`max-w-xs p-3 rounded-lg shadow-md ${
+                  msg.sender === "bot"
+                    ? "bg-primary text-white self-start"
+                    : "bg-blue-500 text-white self-end"
+                }`}
+              >
                 {msg.text}
               </motion.div>
             ))}
-
-            {/* ✅ Tailwind-based Typing Indicator */}
             {isThinking && (
               <div className="self-start flex space-x-1 p-2">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
@@ -162,17 +225,8 @@ const Chatbot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* Quick Reply Buttons */}
-          <div className="p-4 border-t bg-white flex items-center space-x-2">
-            <button onClick={() => sendMessage("Affirmation")} className="bg-gray-200 px-3 py-1 rounded-lg">
-              Affirmation
-            </button>
-            <button onClick={() => sendMessage("Meditation")} className="bg-gray-200 px-3 py-1 rounded-lg">
-              Meditation
-            </button>
-          </div>
-
-          {/* Input Field */}
+          
+          {/* Input */}
           <div className="p-4 border-t bg-white flex items-center space-x-2">
             <input
               type="text"
@@ -185,15 +239,16 @@ const Chatbot = () => {
             <button onClick={() => sendMessage(input)} className="bg-primary text-white px-4 py-2 rounded-lg">
               <FaPaperPlane />
             </button>
-
-            {/* Microphone Button */}
             <button onClick={toggleListening} className="bg-primary text-white px-4 py-2 rounded-lg ml-2">
               <FaMicrophone />
             </button>
           </div>
         </motion.div>
       ) : (
-        <motion.button onClick={toggleChat} className="text-white hover:scale-110 transform transition flex items-center">
+        <motion.button
+          onClick={toggleChat}
+          className="text-white hover:scale-110 transform transition flex items-center"
+        >
           <div className="w-28 h-28">
             <Lottie animationData={chatbotAnimation} loop={true} />
           </div>

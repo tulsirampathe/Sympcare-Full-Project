@@ -1,20 +1,31 @@
 import { useContext, useState } from "react";
+import axios from "axios";
 import { FaCloudUploadAlt } from "react-icons/fa";
 import { assets } from "../assets/assets";
-import { skindata } from "../data/skindiseaseData"
+import { skindata } from "../data/skindiseaseData";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+
+
+const API_KEY_PIXABAY = "49856975-b50f4f2288e42fd6f79dc9c5d";
+const GEMINI_API_KEY = "AIzaSyBadJ5jdznsttPKQLyrDzZTEbSNvKzTt4U";
 
 const SkinDiseaseDetector = () => {
   const [file, setFile] = useState(null);
   const [dragging, setDragging] = useState(false);
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingRemedies, setLoadingRemedies] = useState(false);
+  const [ayurvedicTreatment, setAyurvedicTreatment] = useState(null);
+  const [herbImages, setHerbImages] = useState({});
+  const [error, setError] = useState(null);
+  const [location, setLocation] = useState(null);
+  const [loadingCenters, setLoadingCenters] = useState(false);
+  const [centers, setCenters] = useState([]);
 
-  const { doctors } = useContext(AppContext)
-
-  const navigate = useNavigate()
-
+  const { doctors } = useContext(AppContext);
+  const navigate = useNavigate();
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -33,7 +44,6 @@ const SkinDiseaseDetector = () => {
 
   const handlePredict = async () => {
     if (!file) return alert("Please upload an image first!");
-
     setLoading(true);
 
     const formData = new FormData();
@@ -46,26 +56,155 @@ const SkinDiseaseDetector = () => {
       });
 
       const data = await response.json();
+      const predictedDisease = skindata.find(
+        (disease) => disease.name.toLowerCase() === data.prediction.toLowerCase()
+      );
 
-      const predictedDisease = skindata.find(disease => disease.name.toLowerCase() === data.prediction.toLowerCase());
-
-      if (response.ok) {
+      if (response.ok && predictedDisease) {
         setPrediction({
           name: predictedDisease.name,
           info: predictedDisease.overview,
           prescription: predictedDisease.prescription,
-          doctors: doctors.filter(doc => doc.speciality.toLowerCase() == data.prediction.toLowerCase())
+          doctors: doctors.filter(
+            (doc) => doc.speciality.toLowerCase() === data.prediction.toLowerCase()
+          ),
         });
+
+        await fetchAyurvedicRemedies(predictedDisease.name);
+        getLocationAndFetch();
       } else {
-        alert(`Error: ${data.error}`);
+        alert(`Error: ${data.error || "Disease not found in dataset."}`);
       }
     } catch (error) {
-      alert("Failed to connect to the server. Please try again.", error);
+      alert("Failed to connect to the server. Please try again.");
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchAyurvedicRemedies = async (diseaseName) => {
+    setLoadingRemedies(true);
+    const prompt = `You are an expert Ayurvedic doctor. Provide a concise and accurate Ayurvedic remedy and the making process of the remedy of this disease nmae as  : ${diseaseName}.
+  
+  Include the following in exactly 2–3 lines per item:
+  1. At least 3 Ayurvedic herbs which are used for the remedy with:
+     - name
+     - botanical_name
+     - description (2 lines max, accurate)
+     - benefits (2 lines max)
+     - use (2 lines on how to use)
+     - keyword (for image search)
+  
+  2. Ayurvedic healing practices specific to the disease (2–3 lines)
+  3. Diet and lifestyle suggestions (2–3 lines)
+  
+  Return the output in clean and strictly formatted JSON (no markdown, no extra text). Format:
+  
+  {
+    "treatment": "Short general treatment advice (2 lines)",
+    "healing_practices": "Text with Ayurvedic healing practices (2–3 lines)",
+    "diet_lifestyle": "Text with diet and lifestyle tips (2–3 lines)",
+    "herbs": [
+      {
+        "name": "Herb Name",
+        "botanical_name": "Botanical Name",
+        "description": "2-line accurate description",
+        "benefits": "2-line benefit summary",
+        "use": "2-line usage instruction",
+        "keyword": "search keyword"
+      }
+    ]
+  }
+  `;
+
+    try {
+      const res = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }],
+            generationConfig: { temperature: 0.7 },
+          }),
+        }
+      );
+
+      const data = await res.json();
+      const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      const cleanedText = responseText.replace(/```json|```/g, "").trim();
+      const json = JSON.parse(cleanedText);
+
+      setAyurvedicTreatment(json);
+      fetchHerbImages(json.herbs);
+      return json;
+    } catch (err) {
+      console.error("Error fetching Ayurvedic remedy:", err);
+      setError("Failed to fetch Ayurvedic remedy.");
+      return null;
+    } finally {
+      setLoadingRemedies(false);
+    }
+  };
+
+  const fetchHerbImages = async (herbs) => {
+    const images = {};
+    for (const herb of herbs) {
+      try {
+        const res = await axios.get(
+          `https://pixabay.com/api/?key=${API_KEY_PIXABAY}&q=${encodeURIComponent(herb.keyword)}&image_type=photo&per_page=3&safesearch=true`
+        );
+        images[herb.name] = res.data.hits[0]?.webformatURL || assets.defaultHerbImage;
+      } catch {
+        images[herb.name] = assets.defaultHerbImage;
+      }
+    }
+    setHerbImages(images);
+  };
+
+  const getLocationAndFetch = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser.");
+      return;
+    }
+
+    setLoadingCenters(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        setLocation({ lat, lon });
+        fetchCentersFromBackend(lat, lon);
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        alert("Unable to retrieve your location.");
+        setLoadingCenters(false);
+      }
+    );
+  };
+
+  const fetchCentersFromBackend = async (lat, lon) => {
+    try {
+      const response = await axios.get("http://localhost:5000/fetchAyurvedicCenters", {
+        params: { lat, lon },
+      });
+
+      const formatted = response.data.map((item) => ({
+        name: item.name,
+        address: item.address,
+        distance: item.distance,
+      }));
+
+      setCenters(formatted);
+    } catch (error) {
+      console.error("Error fetching centers from backend:", error);
+      alert("Something went wrong while fetching Ayurvedic centers.");
+    } finally {
+      setLoadingCenters(false);
+    }
+  };
 
   return (
     <div className="px-6 md:px-12 lg:px-24 min-h-screen flex flex-col items-center">
@@ -187,6 +326,124 @@ const SkinDiseaseDetector = () => {
               </div>
             </div>
           </div>
+
+          {/* Ayurvedic Remedies */}
+          {loadingRemedies ? (
+            <div className="mt-16 text-center">
+              <div className="flex justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-green-600 border-solid"></div>
+              </div>
+              <p className="text-green-600 mt-4">Loading Ayurvedic Remedies...</p>
+            </div>
+          ) : ayurvedicTreatment && (
+
+            <div className="mt-16 bg-white p-8 rounded-lg shadow-lg">
+              <h2 className="text-3xl font-bold  text-center mb-10">
+                <span className="text-green-600"> Ayurvedic</span> Remedies
+              </h2>
+
+              {/* General Treatment */}
+              <p className="text-center text-lg text-gray-700 mb-6">
+                <strong className="text-primary">Suggested Treatment:</strong> {ayurvedicTreatment.treatment}
+              </p>
+
+              {/* Herbs Grid */}
+              <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {ayurvedicTreatment.herbs.map((herb, index) => (
+                  <motion.div
+                    key={index}
+                    className="bg-green-50 p-6 rounded-2xl shadow-md"
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.2 }}
+                    viewport={{ once: true }}
+                  >
+                    <img
+                      src={herbImages[herb.name] || assets.defaultHerbImage}
+                      alt={herb.name}
+                      className="w-full h-[180px] object-cover rounded-xl mb-4"
+                    />
+                    <h3 className="text-xl font-semibold text-green-700 mb-1">{herb.name}</h3>
+                    <p className="text-sm text-gray-500 italic mb-2">
+                      <strong>Botanical Name:</strong> {herb.botanical_name}
+                    </p>
+                    <p className="text-gray-700 mb-2">{herb.description}</p>
+                    <p className="text-gray-600 text-sm mb-1"><strong>Benefits:</strong> {herb.benefits}</p>
+                    <p className="text-sm text-gray-500"><strong>Usage:</strong> {herb.use}</p>
+                  </motion.div>
+                ))}
+              </div>
+
+              {/* Ayurvedic Practices & Diet Section */}
+              <div className="mt-16 bg-green-100 rounded-2xl p-10 shadow-inner">
+                <h3 className="text-2xl font-bold text-center text-green-800 mb-8">
+                  Ayurvedic Healing Practices & Lifestyle
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-800">
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500">
+                    <h4 className="text-xl font-semibold text-green-700 mb-2">Healing Practices</h4>
+                    <p className="text-gray-700 leading-relaxed">
+                      {ayurvedicTreatment.healing_practices}
+                    </p>
+                  </div>
+                  <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-yellow-500">
+                    <h4 className="text-xl font-semibold text-yellow-700 mb-2">Diet & Lifestyle</h4>
+                    <p className="text-gray-700 leading-relaxed">
+                      {ayurvedicTreatment.diet_lifestyle}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+
+
+            </div>
+          )}
+
+
+
+          {location && (
+            <div className="mt-6 p-4 bg-blue-100 rounded shadow">
+              {loadingCenters && <p>Loading centers...</p>}
+              {!loadingCenters && centers.length > 0 && (
+
+                <div className="mt-12 bg-white p-6 rounded-lg shadow-lg">
+                  <h3 className="text-2xl font-semibold mb-4 text-center">
+                    Nearby Ayurvedic Centers
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {centers.map((center, idx) => (
+                      <div
+                        key={idx}
+                        className="p-4 border rounded-lg hover:shadow-md transition duration-200 bg-gray-50"
+                      >
+                        <h4 className="text-lg font-bold text-blue-700">{center.name}</h4>
+                        <p className="text-sm text-gray-600">{center.address}</p>
+                        <p className="text-sm text-green-600 mt-1">~ {center.distance / 1000} km away</p>
+                        <button
+                          onClick={() =>
+                            window.open(
+                              `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                                center.name
+                              )}`,
+                              "_blank"
+                            )
+                          }
+                          className="mt-3 inline-block bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+                        >
+                          View on Google Maps
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {!loadingCenters && centers.length === 0 && <p>No Ayurvedic centers found nearby.</p>}
+            </div>
+          )}
+
+
 
           {/* Suggested Doctors Section */}
           <div className="bg-white p-6 rounded-lg shadow-lg mt-12">
