@@ -1,2 +1,4 @@
-2025/04/23-10:08:50.760 3864 Creating DB D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\shared_proto_db\metadata since it was missing.
-2025/04/23-10:08:50.822 3864 Reusing MANIFEST D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\shared_proto_db\metadata/MANIFEST-000001
+2025/04/23-10:43:54.966 2be0 Creating DB D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\shared_proto_db\metadata since it was missing.
+2025/04/23-10:43:54.974 2be0 Reusing MANIFEST D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\shared_proto_db\metadata/MANIFEST-000001
+2025/04/23-10:43:54.974 2be0 Recovering log #3
+2025/04/23-10:43:54.975 2be0 Reusing old log D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\shared_proto_db\metadata/000003.log 
