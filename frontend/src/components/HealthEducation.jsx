@@ -1,109 +1,162 @@
-import React from "react";
-import {
-  FaBrain,
-  FaHeartbeat,
-  FaSmile,
-  FaShieldVirus,
-  FaThermometerHalf,
-} from "react-icons/fa";
-import { motion } from "framer-motion"; // For animation
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import axios from "axios";
 
-const mentalHealthData = [
+const API_KEY = "49856975-b50f4f2288e42fd6f79dc9c5d";
+
+const staticData = [
   {
-    title: "How to Prevent Depression? 😔",
-    description:
-      "Depression is a mental health disorder that affects mood, thoughts, and behavior. It can cause persistent feelings of sadness and loss of interest in daily activities.",
-    prevention:
-      "Talk to friends and family, practice mindfulness, seek therapy or counseling, exercise regularly, and avoid alcohol or substance use.",
-    icon: <FaSmile className="text-blue-500 text-3xl" />,
+    title: "Ashwagandha for Stress Relief 🧘‍♂️",
+    description: "Ashwagandha is an adaptogenic herb known for reducing stress, anxiety, and improving energy levels.",
+    use: "Take as a powder with warm milk before bed or in capsule form daily.",
+    keyword: "Ashwagandha herb",
   },
   {
-    title: "How to Manage Anxiety? 😟",
-    description:
-      "Anxiety is characterized by excessive worry and fear. It can interfere with daily life and cause physical symptoms such as rapid heartbeat and sweating.",
-    prevention:
-      "Practice relaxation techniques, maintain a balanced lifestyle, seek professional therapy, engage in deep breathing exercises, and get adequate sleep.",
-    icon: <FaBrain className="text-purple-500 text-3xl" />,
+    title: "Triphala for Digestion 🍃",
+    description: "A combination of three fruits – Amalaki, Bibhitaki, and Haritaki – Triphala is excellent for gut health and detox.",
+    use: "Consume Triphala powder with warm water before bed or early morning.",
+    keyword: "Triphala powder",
   },
   {
-    title: "How to Prevent Mental Fatigue? 🧠💤",
-    description:
-      "Mental fatigue occurs when the brain becomes overwhelmed from prolonged periods of mental effort, leading to decreased productivity and focus.",
-    prevention:
-      "Take regular breaks, get enough sleep, manage stress through relaxation exercises, and practice time management techniques.",
-    icon: <FaHeartbeat className="text-pink-500 text-3xl" />,
+    title: "Neem for Skin Problems 🌿",
+    description: "Neem has antibacterial and antifungal properties that help purify blood and treat skin conditions like acne and eczema.",
+    use: "Apply neem paste to affected areas or consume neem capsules after meals.",
+    keyword: "Neem leaves",
   },
   {
-    title: "Prevent Substance Abuse 🚭",
-    description:
-      "Substance abuse involves the harmful or hazardous use of psychoactive substances like alcohol or drugs. It can lead to mental health problems and addiction.",
-    prevention:
-      "Avoid alcohol or drug use, seek professional help for substance dependence, and join support groups or counseling programs.",
-    icon: <FaShieldVirus className="text-green-500 text-3xl" />,
+    title: "Tulsi for Respiratory Health 🌬️",
+    description: "Holy Basil (Tulsi) is revered in Ayurveda for boosting immunity and treating cough, cold, and bronchitis.",
+    use: "Boil tulsi leaves in water and drink as tea, or chew fresh leaves in the morning.",
+    keyword: "Tulsi leaves",
   },
   {
-    title: "How to Cope with Stress? 😩➡️😌",
-    description:
-      "Chronic stress can lead to mental and physical health problems. It is important to find effective ways to manage stress to prevent burnout.",
-    prevention:
-      "Practice stress management techniques such as yoga, meditation, deep breathing, or engaging in hobbies. Talk to a mental health professional for guidance.",
-    icon: <FaThermometerHalf className="text-orange-500 text-3xl" />,
+    title: "Brahmi for Memory 🧠",
+    description: "Brahmi improves cognitive functions, reduces anxiety, and enhances memory retention.",
+    use: "Consume as a tonic, capsule, or with warm ghee in the morning.",
+    keyword: "Brahmi plant",
   },
   {
-    title: "What is PTSD (Post-Traumatic Stress Disorder)? 💔",
-    description:
-      "PTSD is a mental health condition triggered by experiencing or witnessing a traumatic event. Symptoms include flashbacks, nightmares, and emotional numbness.",
-    prevention:
-      "Seek professional help, engage in trauma-focused therapy, and practice self-care techniques such as journaling or mindfulness.",
-    icon: <FaBrain className="text-blue-500 text-3xl" />,
+    title: "Amla for Immunity 💪",
+    description: "Rich in Vitamin C, Amla (Indian Gooseberry) rejuvenates tissues, improves eyesight, and strengthens immunity.",
+    use: "Drink amla juice daily or eat raw with a pinch of salt.",
+    keyword: "Amla fruit",
   },
   {
-    title: "Prevent Suicidal Thoughts 😞",
-    description:
-      "Suicidal thoughts can stem from feelings of hopelessness and depression. It's important to take them seriously and seek help immediately.",
-    prevention:
-      "Talk to a therapist, engage in supportive conversations with friends and family, and seek emergency help if you or someone you know is at risk.",
-    icon: <FaSmile className="text-red-500 text-3xl" />,
+    title: "Shatavari for Women's Health 🌸",
+    description: "Shatavari is beneficial for female reproductive health, hormonal balance, and lactation.",
+    use: "Consume in powder form with milk or in capsule form.",
+    keyword: "Shatavari root",
   },
   {
-    title: "How to Improve Sleep for Mental Health? 💤",
-    description:
-      "Poor sleep quality is linked to various mental health conditions such as anxiety, depression, and stress. Proper sleep hygiene is essential for emotional well-being.",
-    prevention:
-      "Maintain a consistent sleep schedule, avoid caffeine before bed, create a relaxing bedtime routine, and limit screen time before sleep.",
-    icon: <FaHeartbeat className="text-purple-500 text-3xl" />,
+    title: "Giloy for Fever and Immunity 🌿",
+    description: "Giloy is known to boost immunity and treat chronic fever and respiratory issues.",
+    use: "Boil giloy stems in water and drink, or take giloy capsules daily.",
+    keyword: "Giloy plant",
+  },
+  {
+    title: "Licorice (Mulethi) for Sore Throat 🍯",
+    description: "Mulethi soothes sore throat, aids in digestion, and boosts respiratory health.",
+    use: "Chew small pieces or drink as tea by boiling in water.",
+    keyword: "Mulethi root",
+  },
+  {
+    title: "Haritaki for Detoxification 🍃",
+    description: "Haritaki is a powerful detoxifier and supports digestive and respiratory health.",
+    use: "Take with warm water before bedtime.",
+    keyword: "Haritaki fruit",
+  },
+  {
+    title: "Manjistha for Blood Purification 🩸",
+    description: "Manjistha purifies blood, supports lymphatic drainage, and improves skin complexion.",
+    use: "Consume as tea or in capsule form.",
+    keyword: "Manjistha herb",
+  },
+  {
+    title: "Turmeric for Inflammation 🌟",
+    description: "Turmeric has anti-inflammatory and antioxidant properties. It helps with joint pain and improves immunity.",
+    use: "Use turmeric in cooking or with warm milk (golden milk).",
+    keyword: "Turmeric root",
+  },
+  {
+    title: "Arjuna for Heart Health ❤️",
+    description: "Arjuna bark supports cardiovascular health and strengthens the heart muscles.",
+    use: "Boil bark in water and drink or use capsules.",
+    keyword: "Arjuna bark",
+  },
+  {
+    title: "Bhringraj for Hair Growth 💇‍♀️",
+    description: "Bhringraj promotes hair growth, prevents hair fall, and improves liver function.",
+    use: "Apply as oil on the scalp or take in powder form.",
+    keyword: "Bhringraj leaves",
+  },
+  {
+    title: "Gokshura for Urinary Health 💧",
+    description: "Gokshura supports urinary tract health and enhances physical stamina.",
+    use: "Consume with milk or in capsule form.",
+    keyword: "Gokshura plant",
   },
 ];
 
-const MentalHealthEducation = () => {
+const AyurvedicHealthEducation = () => {
+  const [remedies, setRemedies] = useState([]);
+
+  useEffect(() => {
+    const fetchImages = async () => {
+      const updatedData = await Promise.all(
+        staticData.map(async (item) => {
+          try {
+            const response = await axios.get(
+              `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(item.keyword)}&image_type=photo&per_page=3&safesearch=true`
+            );
+            const image = response.data.hits[0]?.webformatURL;
+            return { ...item, image };
+          } catch (error) {
+            console.error("Error fetching image for", item.keyword, error);
+            return { ...item, image: "" };
+          }
+        })
+      );
+      setRemedies(updatedData);
+    };
+
+    fetchImages();
+  }, []);
+
   return (
     <div className="px-6 md:px-12 lg:px-24">
-      {/* Section Title */}
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800">
-          MENTAL <span className="text-primary">HEALTH EDUCATION</span>
+        <h2 className="text-3xl font-bold text-green-800">
+        Ayurvedic Health Guidance
         </h2>
         <p className="text-gray-600 mt-2">
-          Learn about mental health care and wellness strategies. 🌱
+          Explore the wisdom of Ayurveda – natural herbs and healing for body, mind & soul 🌿
         </p>
       </div>
 
-      {/* Content Section */}
       <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {mentalHealthData.map((item, index) => (
+        {remedies.map((item, index) => (
           <motion.div
             key={index}
-            className="border p-8 rounded-lg text-center bg-white shadow-md hover:bg-zinc-300 transition-all duration-300 cursor-pointer"
-            whileHover={{ scale: 1.05 }} // Animation on hover
-            whileTap={{ scale: 0.95 }} // Animation on click
+            className="border p-6 rounded-lg bg-white text-center shadow-md hover:bg-lime-100 transition duration-300"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            
           >
-            <div className="flex justify-center mb-4">{item.icon}</div>
-            <h3 className="text-xl font-semibold">{item.title}</h3>
-            <p className="mt-2 text-gray-600 group-hover:text-white">
-              {item.description}
-            </p>
-            <p className="text-sm text-green-600 font-medium mt-2">
-              🛑 {item.prevention}
+            {item.image ? (
+              <img
+                src={item.image}
+                alt={item.title}
+                className="w-full h-40 object-cover rounded-md mb-4"
+              />
+            ) : (
+              <div className="w-full h-40 bg-gray-200 rounded-md mb-4 flex items-center justify-center text-sm text-gray-500">
+                Image not available
+              </div>
+            )}
+            <h3 className="text-xl font-semibold text-green-700">{item.title}</h3>
+            <p className="mt-2 text-gray-600">{item.description}</p>
+            <p className="text-sm text-emerald-600 font-medium mt-2">
+              🌿 Use: {item.use}
             </p>
           </motion.div>
         ))}
@@ -112,4 +165,4 @@ const MentalHealthEducation = () => {
   );
 };
 
-export default MentalHealthEducation;
+export default AyurvedicHealthEducation;

@@ -1,8 +1,8 @@
 // whatsappRoutes.js
 import express from 'express';
 import whatsappWeb from 'whatsapp-web.js';
-const { Client, LocalAuth } = whatsappWeb;
 import qrcode from 'qrcode-terminal';
+const { Client, LocalAuth } = whatsappWeb;
 
 const router = express.Router();
 const client = new Client({
@@ -27,26 +27,35 @@ client.on('ready', () => {
 
 // Send message to multiple numbers
 router.post('/send-message', async (req, res) => {
-    const { numbers, message } = req.body;  // Expect an array of numbers
+    const { messages } = req.body;  // Expecting an array of message objects
 
-    if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !message) {
-        return res.status(400).json({ error: 'Please provide valid numbers and message.' });
+    if (!messages || !Array.isArray(messages) || messages.length === 0) {
+        return res.status(400).json({ error: 'Please provide valid messages.' });
     }
 
     let failedNumbers = [];
     let successfulNumbers = [];
 
-    // Loop through each number
-    for (const number of numbers) {
-        const chatId = `91${number}@c.us`;  // Ensure country code is added
+    // Loop through each message type (e.g., appointment, medicine, team, etc.)
+    for (const messageObj of messages) {
+        const { type, numbers, message } = messageObj;
 
-        try {
-            await client.sendMessage(chatId, message);
-            console.log(`Message sent to: ${number}`);
-            successfulNumbers.push(number);
-        } catch (error) {
-            console.log(`Failed to send message to ${number}:`, error);
-            failedNumbers.push(number);
+        if (!numbers || !Array.isArray(numbers) || numbers.length === 0 || !message || !type) {
+            return res.status(400).json({ error: 'Invalid data format. Please include type, numbers, and message.' });
+        }
+
+        // For each message type, send the message to the respective numbers
+        for (const number of numbers) {
+            const chatId = `91${number}@c.us`;  // Ensure country code is added
+            
+            try {
+                await client.sendMessage(chatId, message);
+                console.log(`Message sent to ${number} with type ${type}`);
+                successfulNumbers.push(number);
+            } catch (error) {
+                console.log(`Failed to send ${type} message to ${number}:`, error);
+                failedNumbers.push(number);
+            }
         }
     }
 

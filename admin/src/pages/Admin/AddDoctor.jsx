@@ -189,6 +189,21 @@ const AddDoctor = () => {
                 <option value="Gastroenterologist">Gastroenterologist</option>
                 <option value="Nail psoriasis">Nail psoriasis</option>
                 <option value="SJS-TEN">SJS-TEN</option>
+                <option value="Abhyanga">Abhyanga</option>
+                <option value="Shirodhara">Shirodhara</option>
+                <option value="Marma">Marma</option>
+                <option value="Kati Basti">Kati Basti</option>
+                <option value="Hands/Head/Face/Feet Treatment">
+                  Hands/Head/Face/Feet Treatment
+                </option>
+                <option value="Garshana">Garshana</option>
+                <option value="Lepana">Lepana</option>
+                <option value="Swedana">Swedana</option>
+                <option value="Udvartana">Udvartana</option>
+                <option value="Nasya">Nasya</option>
+                <option value="Gandusha and Kavala">Gandusha and Kavala</option>
+                <option value="Panchakarma">Panchakarma</option>
+                <option value="Rasayana">Rasayana</option>
               </select>
             </div>
 

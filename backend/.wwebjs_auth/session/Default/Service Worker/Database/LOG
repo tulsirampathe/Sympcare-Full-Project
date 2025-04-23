@@ -1,3 +1,2 @@
-2025/04/22-13:58:53.282 1760 Reusing MANIFEST D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\Service Worker\Database/MANIFEST-000001
-2025/04/22-13:58:53.282 1760 Recovering log #3
-2025/04/22-13:58:53.283 1760 Reusing old log D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\Service Worker\Database/000003.log 
+2025/04/23-10:17:31.299 3be0 Creating DB D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\Service Worker\Database since it was missing.
+2025/04/23-10:17:31.314 3be0 Reusing MANIFEST D:\My_learning\Projects_CSE-AIMl\Sympcare-Full-Project\backend\.wwebjs_auth\session\Default\Service Worker\Database/MANIFEST-000001
