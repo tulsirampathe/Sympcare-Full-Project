@@ -70,39 +70,114 @@ const Appointment = () => {
   };
 
   // Book appointment
-  const bookAppointment = async () => {
-    if (!token) {
-      toast.warning("Login to book an appointment");
-      return navigate("/login");
-    }
+  // const bookAppointment = async () => {
+  //   if (!token) {
+  //     toast.warning("Login to book an appointment");
+  //     return navigate("/login");
+  //   }
 
-    if (!slotTime) {
-      toast.warning("Please select a time slot");
-      return;
-    }
+  //   if (!slotTime) {
+  //     toast.warning("Please select a time slot");
+  //     return;
+  //   }
 
-    let day = selectedDate.getDate();
-    let month = selectedDate.getMonth() + 1;
-    let year = selectedDate.getFullYear();
-    const slotDate = `${day}_${month}_${year}`;
+  //   let day = selectedDate.getDate();
+  //   let month = selectedDate.getMonth() + 1;
+  //   let year = selectedDate.getFullYear();
+  //   const slotDate = `${day}_${month}_${year}`;
 
-    try {
-      const { data } = await axios.post(
-        `${backendUrl}/api/user/book-appointment`,
-        { docId, slotDate, slotTime },
-        { headers: { token } }
-      );
-      if (data.success) {
-        toast.success(data.message);
-        getDoctosData();
-        navigate("/my-appointments");
-      } else {
-        toast.error(data.message);
-      }
-    } catch (error) {
-      toast.error(error.message);
+  //   try {
+  //     const { data } = await axios.post(
+  //       `${backendUrl}/api/user/book-appointment`,
+  //       { docId, slotDate, slotTime },
+  //       { headers: { token } }
+  //     );
+  //     if (data.success) {
+  //       console.log("appointment: ", data);
+        
+  //       toast.success(data.message);
+  //       getDoctosData();
+  //       navigate("/my-appointments");
+  //     } else {
+  //       toast.error(data.message);
+  //     }
+  //   } catch (error) {
+  //     toast.error(error.message);
+  //   }
+  // };
+
+  // Book appointment
+const bookAppointment = async () => {
+  if (!token) {
+    toast.warning("Login to book an appointment");
+    return navigate("/login");
+  }
+
+  if (!slotTime) {
+    toast.warning("Please select a time slot");
+    return;
+  }
+
+  let day = selectedDate.getDate();
+  let month = selectedDate.getMonth() + 1;
+  let year = selectedDate.getFullYear();
+  const slotDate = `${day}_${month}_${year}`;
+
+  try {
+    const { data } = await axios.post(
+      `${backendUrl}/api/user/book-appointment`,
+      { docId, slotDate, slotTime },
+      { headers: { token } }
+    );
+
+    if (data.success) {
+      console.log("appointment: ", data);
+      toast.success(data.message);
+      getDoctosData();
+      navigate("/my-appointments");
+
+      // 📲 SEND WHATSAPP MESSAGE
+      const appointment = data.appointmentData;
+      const doctor = appointment.docData;
+      const user = appointment.userData;
+
+      const formattedDate = slotDate.replace(/_/g, '/');
+      const message = `👨‍⚕️ *Appointment Confirmation - SympCare*
+
+Hello ${user.name},
+
+Your appointment with *Dr. ${doctor.name}* has been successfully booked.
+
+📅 *Date:* ${formattedDate}
+🕒 *Time:* ${appointment.slotTime}
+📍 *Location:* ${doctor.address.line1}, ${doctor.address.line2}
+
+💰 *Fees:* ₹${appointment.amount}
+⚠️ *Note:* Your payment is pending. Please complete it to confirm your appointment.
+
+Stay healthy,
+Team *SympCare*
+`;
+
+      // Send WhatsApp message
+      await axios.post("http://localhost:4000/api/whatsapp/send-message", {
+        messages: [
+          {
+            type: "appointment",
+            numbers: [user.phone],
+            message,
+          },
+        ],
+      });
+
+    } else {
+      toast.error(data.message);
     }
-  };
+  } catch (error) {
+    toast.error(error.message);
+  }
+};
+
 
   useEffect(() => {
     if (doctors.length > 0) {

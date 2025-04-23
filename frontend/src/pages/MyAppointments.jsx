@@ -1,16 +1,19 @@
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AppContext } from "../context/AppContext";
+import AppContextProvider from "../context/AppContext";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { assets } from "../assets/assets";
+import { AppContext } from "../context/AppContext";
 
 const MyAppointments = () => {
-  const { backendUrl, token } = useContext(AppContext);
+  const { backendUrl, token, userData } = useContext(AppContext);
   const navigate = useNavigate();
 
   const [appointments, setAppointments] = useState([]);
   const [payment, setPayment] = useState("");
+
+
 
   const months = [
     "Jan",
@@ -71,39 +74,105 @@ const MyAppointments = () => {
     }
   };
 
-  const initPay = (order) => {
-    const options = {
-      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-      amount: order.amount,
-      currency: order.currency,
-      name: "Appointment Payment",
-      description: "Appointment Payment",
-      order_id: order.id,
-      receipt: order.receipt,
-      handler: async (response) => {
-        console.log(response);
+  // const initPay = (order) => {
+  //   const options = {
+  //     key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+  //     amount: order.amount,
+  //     currency: order.currency,
+  //     name: "Appointment Payment",
+  //     description: "Appointment Payment",
+  //     order_id: order.id,
+  //     receipt: order.receipt,
+  //     handler: async (response) => {
+  //       console.log(response);
 
-        try {
-          const { data } = await axios.post(
-            backendUrl + "/api/user/verifyRazorpay",
-            response,
-            { headers: { token } }
-          );
-          if (data.success) {
-            navigate("/my-appointments");
-            getUserAppointments();
-          }
-        } catch (error) {
-          console.log(error);
-          toast.error(error.message);
-        }
-      },
-    };
-    const rzp = new window.Razorpay(options);
-    rzp.open();
-  };
+  //       try {
+  //         const { data } = await axios.post(
+  //           backendUrl + "/api/user/verifyRazorpay",
+  //           response,
+  //           { headers: { token } }
+  //         );
+  //         if (data.success) {
+  //           console.log("init pay data: ", data);
+            
+  //           navigate("/my-appointments");
+  //           getUserAppointments();
+  //         }
+  //       } catch (error) {
+  //         console.log(error);
+  //         toast.error(error.message);
+  //       }
+  //     },
+  //   };
+  //   const rzp = new window.Razorpay(options);
+  //   rzp.open();
+  // };
 
   // Function to make payment using razorpay
+ 
+
+const initPay = (order) => {
+  const options = {
+    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+    amount: order.amount,
+    currency: order.currency,
+    name: "Appointment Payment",
+    description: "Appointment Payment",
+    order_id: order.id,
+    receipt: order.receipt,
+    handler: async (response) => {
+      console.log(response);
+
+      try {
+        const { data } = await axios.post(
+          backendUrl + "/api/user/verifyRazorpay",
+          response,
+          { headers: { token } }
+        );
+
+        if (data.success) {
+          console.log("init pay data: ", data);
+
+          // ✅ Send WhatsApp message after payment
+          const message = `✅ *Payment Successful - SympCare*
+
+Hello ${userData.name},
+
+We have received your payment of ₹${order.amount / 100} for your appointment.
+
+🧾 *Payment ID:* ${response.razorpay_payment_id}
+📄 *Order ID:* ${response.razorpay_order_id}
+
+Your appointment is now confirmed.
+
+Thank you for choosing *SympCare* 💚
+Stay healthy and happy!`;
+
+          await axios.post("http://localhost:4000/api/whatsapp/send-message", {
+            messages: [
+              {
+                type: "payment",
+                numbers: [userData.phone],
+                message,
+              },
+            ],
+          });
+
+          navigate("/my-appointments");
+          getUserAppointments();
+        }
+      } catch (error) {
+        console.log(error);
+        toast.error(error.message);
+      }
+    },
+  };
+
+  const rzp = new window.Razorpay(options);
+  rzp.open();
+};
+
+
   const appointmentRazorpay = async (appointmentId) => {
     try {
       const { data } = await axios.post(
@@ -112,6 +181,8 @@ const MyAppointments = () => {
         { headers: { token } }
       );
       if (data.success) {
+        console.log("Razorpay: ", data);
+        
         initPay(data.order);
       } else {
         toast.error(data.message);
