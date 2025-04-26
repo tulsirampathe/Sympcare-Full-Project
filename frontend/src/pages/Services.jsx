@@ -35,7 +35,7 @@ const Services = () => {
 
   const mentalService = {
     title: "AI-Powered Mental Wellness",
-    text: "Receive 24/7 emotional support, mood tracking, and personalized mental well-being tips — powered by our intelligent Ayurveda-guided AI assistant.",
+    text: "Experience 24/7 AI-driven emotional support, personalized mental health assessments, and instant professional insights for holistic well-being.",
     icon: <FaUserMd className="text-6xl text-blue-600" />,
     route: "/health-assessment",
   };
@@ -53,7 +53,8 @@ const Services = () => {
           Our <span className="text-primary">Healthcare Services</span>
         </h2>
         <p className="text-gray-600 max-w-3xl mx-auto text-lg">
-          Comprehensive digital health solutions supporting your wellness journey.
+          Comprehensive digital health solutions supporting your wellness
+          journey.
         </p>
       </motion.div>
 
@@ -105,7 +106,8 @@ const Services = () => {
           Mental Health <span className="text-primary">AI Assistant</span>
         </h3>
         <p className="text-gray-600 max-w-2xl mx-auto mt-3">
-          Embrace holistic wellness powered by AI and Ayurveda – your digital guide for balanced living.
+          Revolutionizing mental healthcare through AI-powered emotional support
+          and instant psychological assessments.
         </p>
       </motion.div>
 

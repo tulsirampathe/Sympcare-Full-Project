@@ -4,119 +4,93 @@ import axios from "axios";
 
 const API_KEY = "49856975-b50f4f2288e42fd6f79dc9c5d";
 
-const staticData = [
+// Mapping Symptoms -> Remedies
+const symptomData = [
   {
-    title: "Ashwagandha for Stress Relief 🧘‍♂️",
-    description: "Ashwagandha is an adaptogenic herb known for reducing stress, anxiety, and improving energy levels.",
-    use: "Take as a powder with warm milk before bed or in capsule form daily.",
-    keyword: "Ashwagandha herb",
+    symptom: "Cough & Cold",
+    remedies: [
+      {
+        title: "Tulsi for Immunity & Lung Health 🌬️",
+        description: "Holy Basil (Tulsi) enhances immunity by regulating cytokine levels and supports respiratory function naturally.",
+        use: "Boil tulsi leaves in water and drink as tea, or chew fresh leaves in the morning.",
+        keyword: "Tulsi leaves",
+      },
+      {
+        title: "Licorice (Mulethi) for Throat Health 🍯",
+        description: "Licorice root reduces throat inflammation and acts as a natural expectorant, supporting upper respiratory tract health.",
+        use: "Chew small pieces or drink as tea by boiling in water.",
+        keyword: "Mulethi root",
+      },
+      {
+        title: "Giloy for Immunomodulation 🌿",
+        description: "Giloy modulates the immune system, helpful in chronic fevers and post-viral recovery.",
+        use: "Boil giloy stems in water and drink, or take giloy capsules daily.",
+        keyword: "Giloy plant",
+      },
+    ],
   },
   {
-    title: "Triphala for Digestion 🍃",
-    description: "A combination of three fruits – Amalaki, Bibhitaki, and Haritaki – Triphala is excellent for gut health and detox.",
-    use: "Consume Triphala powder with warm water before bed or early morning.",
-    keyword: "Triphala powder",
+    symptom: "Stress & Anxiety",
+    remedies: [
+      {
+        title: "Ashwagandha for Stress & Cortisol Balance 🧘‍♂️",
+        description: "Ashwagandha reduces cortisol (stress hormone) and boosts mental clarity.",
+        use: "Take as powder with warm milk before bed or in capsule form.",
+        keyword: "Ashwagandha herb",
+      },
+      {
+        title: "Brahmi for Brain Neuroprotection 🧠",
+        description: "Brahmi improves memory, reduces stress by protecting neurons.",
+        use: "Consume as a tonic, capsule, or with warm ghee.",
+        keyword: "Brahmi plant",
+      },
+    ],
   },
   {
-    title: "Neem for Skin Problems 🌿",
-    description: "Neem has antibacterial and antifungal properties that help purify blood and treat skin conditions like acne and eczema.",
-    use: "Apply neem paste to affected areas or consume neem capsules after meals.",
-    keyword: "Neem leaves",
+    symptom: "Indigestion & Gut Health",
+    remedies: [
+      {
+        title: "Triphala for Gut Microbiome 🍃",
+        description: "Supports gut bacteria, improves digestion and detoxification.",
+        use: "Consume Triphala powder with warm water before bed or early morning.",
+        keyword: "Triphala powder",
+      },
+      {
+        title: "Haritaki for Natural Detox 🍃",
+        description: "Supports gentle cleansing of the digestive tract, promoting healthy elimination.",
+        use: "Take with warm water before bedtime.",
+        keyword: "Haritaki fruit",
+      },
+    ],
   },
-  {
-    title: "Tulsi for Respiratory Health 🌬️",
-    description: "Holy Basil (Tulsi) is revered in Ayurveda for boosting immunity and treating cough, cold, and bronchitis.",
-    use: "Boil tulsi leaves in water and drink as tea, or chew fresh leaves in the morning.",
-    keyword: "Tulsi leaves",
-  },
-  {
-    title: "Brahmi for Memory 🧠",
-    description: "Brahmi improves cognitive functions, reduces anxiety, and enhances memory retention.",
-    use: "Consume as a tonic, capsule, or with warm ghee in the morning.",
-    keyword: "Brahmi plant",
-  },
-  {
-    title: "Amla for Immunity 💪",
-    description: "Rich in Vitamin C, Amla (Indian Gooseberry) rejuvenates tissues, improves eyesight, and strengthens immunity.",
-    use: "Drink amla juice daily or eat raw with a pinch of salt.",
-    keyword: "Amla fruit",
-  },
-  {
-    title: "Shatavari for Women's Health 🌸",
-    description: "Shatavari is beneficial for female reproductive health, hormonal balance, and lactation.",
-    use: "Consume in powder form with milk or in capsule form.",
-    keyword: "Shatavari root",
-  },
-  {
-    title: "Giloy for Fever and Immunity 🌿",
-    description: "Giloy is known to boost immunity and treat chronic fever and respiratory issues.",
-    use: "Boil giloy stems in water and drink, or take giloy capsules daily.",
-    keyword: "Giloy plant",
-  },
-  {
-    title: "Licorice (Mulethi) for Sore Throat 🍯",
-    description: "Mulethi soothes sore throat, aids in digestion, and boosts respiratory health.",
-    use: "Chew small pieces or drink as tea by boiling in water.",
-    keyword: "Mulethi root",
-  },
-  {
-    title: "Haritaki for Detoxification 🍃",
-    description: "Haritaki is a powerful detoxifier and supports digestive and respiratory health.",
-    use: "Take with warm water before bedtime.",
-    keyword: "Haritaki fruit",
-  },
-  {
-    title: "Manjistha for Blood Purification 🩸",
-    description: "Manjistha purifies blood, supports lymphatic drainage, and improves skin complexion.",
-    use: "Consume as tea or in capsule form.",
-    keyword: "Manjistha herb",
-  },
-  {
-    title: "Turmeric for Inflammation 🌟",
-    description: "Turmeric has anti-inflammatory and antioxidant properties. It helps with joint pain and improves immunity.",
-    use: "Use turmeric in cooking or with warm milk (golden milk).",
-    keyword: "Turmeric root",
-  },
-  {
-    title: "Arjuna for Heart Health ❤️",
-    description: "Arjuna bark supports cardiovascular health and strengthens the heart muscles.",
-    use: "Boil bark in water and drink or use capsules.",
-    keyword: "Arjuna bark",
-  },
-  {
-    title: "Bhringraj for Hair Growth 💇‍♀️",
-    description: "Bhringraj promotes hair growth, prevents hair fall, and improves liver function.",
-    use: "Apply as oil on the scalp or take in powder form.",
-    keyword: "Bhringraj leaves",
-  },
-  {
-    title: "Gokshura for Urinary Health 💧",
-    description: "Gokshura supports urinary tract health and enhances physical stamina.",
-    use: "Consume with milk or in capsule form.",
-    keyword: "Gokshura plant",
-  },
+  // Add more symptom categories similarly...
 ];
 
 const AyurvedicHealthEducation = () => {
-  const [remedies, setRemedies] = useState([]);
+  const [remediesWithImages, setRemediesWithImages] = useState([]);
 
   useEffect(() => {
     const fetchImages = async () => {
       const updatedData = await Promise.all(
-        staticData.map(async (item) => {
-          try {
-            const response = await axios.get(
-              `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(item.keyword)}&image_type=photo&per_page=3&safesearch=true`
-            );
-            const image = response.data.hits[0]?.webformatURL;
-            return { ...item, image };
-          } catch (error) {
-            console.error("Error fetching image for", item.keyword, error);
-            return { ...item, image: "" };
-          }
+        symptomData.map(async (symptomItem) => {
+          const remedies = await Promise.all(
+            symptomItem.remedies.map(async (remedy) => {
+              try {
+                const response = await axios.get(
+                  `https://pixabay.com/api/?key=${API_KEY}&q=${encodeURIComponent(remedy.keyword)}&image_type=photo&per_page=3&safesearch=true`
+                );
+                const image = response.data.hits[0]?.webformatURL;
+                return { ...remedy, image };
+              } catch (error) {
+                console.error("Error fetching image for", remedy.keyword, error);
+                return { ...remedy, image: "" };
+              }
+            })
+          );
+          return { symptom: symptomItem.symptom, remedies };
         })
       );
-      setRemedies(updatedData);
+      setRemediesWithImages(updatedData);
     };
 
     fetchImages();
@@ -125,40 +99,47 @@ const AyurvedicHealthEducation = () => {
   return (
     <div className="px-6 md:px-12 lg:px-24">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-green-800">
-        Ayurvedic Health Guidance
+        <h2 className="text-3xl font-bold">
+          Holistic Healing for <span className="text-primary">Common Symptoms</span> 🌿
         </h2>
         <p className="text-gray-600 mt-2">
-          Explore the wisdom of Ayurveda – natural herbs and healing for body, mind & soul 🌿
+          Find Ayurvedic remedies based on your symptoms, blending ancient wisdom with modern science.
         </p>
       </div>
 
-      <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {remedies.map((item, index) => (
-          <motion.div
-            key={index}
-            className="border p-6 rounded-lg bg-white text-center shadow-md hover:bg-lime-100 transition duration-300"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            
-          >
-            {item.image ? (
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-40 object-cover rounded-md mb-4"
-              />
-            ) : (
-              <div className="w-full h-40 bg-gray-200 rounded-md mb-4 flex items-center justify-center text-sm text-gray-500">
-                Image not available
-              </div>
-            )}
-            <h3 className="text-xl font-semibold text-green-700">{item.title}</h3>
-            <p className="mt-2 text-gray-600">{item.description}</p>
-            <p className="text-sm text-emerald-600 font-medium mt-2">
-              🌿 Use: {item.use}
-            </p>
-          </motion.div>
+      <div className="mt-12 space-y-12">
+        {remediesWithImages.map((symptomBlock, idx) => (
+          <div key={idx}>
+            <h3 className="text-2xl font-semibold text-primary mb-6">{symptomBlock.symptom}</h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {symptomBlock.remedies.map((item, index) => (
+                <motion.div
+                  key={index}
+                  className="border p-6 rounded-lg bg-white text-center shadow-md hover:bg-lime-100 transition duration-300"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  {item.image ? (
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-40 object-cover rounded-md mb-4"
+                    />
+                  ) : (
+                    <div className="w-full h-40 bg-gray-200 rounded-md mb-4 flex items-center justify-center text-sm text-gray-500">
+                      Image not available
+                    </div>
+                  )}
+                  <h4 className="text-xl font-semibold text-green-700">{item.title}</h4>
+                  <p className="mt-2 text-gray-600">{item.description}</p>
+                  <p className="text-sm text-emerald-600 font-medium mt-2">
+                    🌿 How to use: {item.use}
+                  </p>
+                </motion.div>
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </div>

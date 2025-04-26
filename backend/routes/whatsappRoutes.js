@@ -1,33 +1,11 @@
 // whatsappRoutes.js
 import express from 'express';
-import whatsappWeb from 'whatsapp-web.js';
-import qrcode from 'qrcode-terminal';
-const { Client, LocalAuth } = whatsappWeb;
+import client from '../whatsappClient.js';
 
 const router = express.Router();
-const client = new Client({
-    authStrategy: new LocalAuth(),
-});
 
-let qrGenerated = false;
-
-// Generate QR code for authentication
-client.on('qr', (qr) => {
-    if (!qrGenerated) {
-        qrcode.generate(qr, { small: true });
-        console.log('Please scan the QR code above with your WhatsApp mobile app.');
-        qrGenerated = true;
-    }
-});
-
-// When the client is ready
-client.on('ready', () => {
-    console.log('WhatsApp Web is ready!');
-});
-
-// Send message to multiple numbers
 router.post('/send-message', async (req, res) => {
-    const { messages } = req.body;  // Expecting an array of message objects
+    const { messages } = req.body;
 
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
         return res.status(400).json({ error: 'Please provide valid messages.' });
@@ -36,7 +14,6 @@ router.post('/send-message', async (req, res) => {
     let failedNumbers = [];
     let successfulNumbers = [];
 
-    // Loop through each message type (e.g., appointment, medicine, team, etc.)
     for (const messageObj of messages) {
         const { type, numbers, message } = messageObj;
 
@@ -44,9 +21,8 @@ router.post('/send-message', async (req, res) => {
             return res.status(400).json({ error: 'Invalid data format. Please include type, numbers, and message.' });
         }
 
-        // For each message type, send the message to the respective numbers
         for (const number of numbers) {
-            const chatId = `91${number}@c.us`;  // Ensure country code is added
+            const chatId = `91${number}@c.us`;
             
             try {
                 await client.sendMessage(chatId, message);
@@ -66,8 +42,4 @@ router.post('/send-message', async (req, res) => {
     return res.status(200).json({ success: `Messages sent successfully to: ${successfulNumbers.join(', ')}` });
 });
 
-// Initialize WhatsApp client
-client.initialize();
-
-// Export router
 export default router;

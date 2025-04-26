@@ -47,21 +47,21 @@ const Navbar = () => {
           <li className="py-1">SERVICES</li>
         </NavLink>
         <NavLink to="/doctors">
-          <li className="py-1">ALL-DOCTORS</li>
+          <li className="py-1">ALL DOCTORS</li>
         </NavLink>
-        <NavLink to="/ayur-therapies">
+        {/* <NavLink to="/ayur-therapies">
           <li className="py-1">AYUR-THERAPIES</li>
-        </NavLink>
+        </NavLink> */}
         <NavLink to="/health-education">
-          <li className="py-1">HEALTH-EDUCATION</li>
+          <li className="py-1">HEALTH EDUCATION</li>
         </NavLink>
 
-        {/* <NavLink to="/about">
+        <NavLink to="/about">
           <li className="py-1">ABOUT</li>
         </NavLink>
         <NavLink to="/contact">
           <li className="py-1">CONTACT</li>
-        </NavLink> */}
+        </NavLink>
       </ul>
 
       <div className="flex items-center gap-4">
