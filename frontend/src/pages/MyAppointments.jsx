@@ -94,7 +94,7 @@ const MyAppointments = () => {
   //         );
   //         if (data.success) {
   //           console.log("init pay data: ", data);
-            
+
   //           navigate("/my-appointments");
   //           getUserAppointments();
   //         }
@@ -109,32 +109,32 @@ const MyAppointments = () => {
   // };
 
   // Function to make payment using razorpay
- 
 
-const initPay = (order) => {
-  const options = {
-    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-    amount: order.amount,
-    currency: order.currency,
-    name: "Appointment Payment",
-    description: "Appointment Payment",
-    order_id: order.id,
-    receipt: order.receipt,
-    handler: async (response) => {
-      console.log(response);
 
-      try {
-        const { data } = await axios.post(
-          backendUrl + "/api/user/verifyRazorpay",
-          response,
-          { headers: { token } }
-        );
+  const initPay = (order) => {
+    const options = {
+      key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Appointment Payment",
+      description: "Appointment Payment",
+      order_id: order.id,
+      receipt: order.receipt,
+      handler: async (response) => {
+        console.log(response);
 
-        if (data.success) {
-          console.log("init pay data: ", data);
+        try {
+          const { data } = await axios.post(
+            backendUrl + "/api/user/verifyRazorpay",
+            response,
+            { headers: { token } }
+          );
 
-          // ✅ Send WhatsApp message after payment
-          const message = `✅ *Payment Successful - SympCare*
+          if (data.success) {
+            console.log("init pay data: ", data);
+
+            // ✅ Send WhatsApp message after payment
+            const message = `✅ *Payment Successful - SympCare*
 
 Hello ${userData.name},
 
@@ -148,29 +148,26 @@ Your appointment is now confirmed.
 Thank you for choosing *SympCare* 💚
 Stay healthy and happy!`;
 
-          await axios.post("http://localhost:4000/api/whatsapp/send-message", {
-            messages: [
-              {
-                type: "payment",
-                numbers: [userData.phone],
-                message,
-              },
-            ],
-          });
+            await axios.post("http://localhost:4000/api/whatsapp/send-message", {
+              type: "payment",
+              number: userData.phone,
+              message,
+            },
+            );
 
-          navigate("/my-appointments");
-          getUserAppointments();
+            navigate("/my-appointments");
+            getUserAppointments();
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error.message);
         }
-      } catch (error) {
-        console.log(error);
-        toast.error(error.message);
-      }
-    },
-  };
+      },
+    };
 
-  const rzp = new window.Razorpay(options);
-  rzp.open();
-};
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  };
 
 
   const appointmentRazorpay = async (appointmentId) => {
@@ -182,7 +179,7 @@ Stay healthy and happy!`;
       );
       if (data.success) {
         console.log("Razorpay: ", data);
-        
+
         initPay(data.order);
       } else {
         toast.error(data.message);
@@ -251,7 +248,7 @@ Stay healthy and happy!`;
                 !item.isCompleted &&
                 payment === item._id && (
                   <button
-                    onClick={() => {appointmentRazorpay(item._id)}}
+                    onClick={() => { appointmentRazorpay(item._id) }}
                     className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-gray-100 hover:text-white transition-all duration-300 flex items-center justify-center"
                   >
                     <img

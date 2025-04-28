@@ -138,22 +138,32 @@ const Chatbot = () => {
   const speakResponse = (text) => {
     const synth = window.speechSynthesis;
     synth.cancel();
-
+  
     const utterance = new SpeechSynthesisUtterance(text);
     const isHindi = /[\u0900-\u097F]/.test(text);
-    const selectedVoice = voices.find((voice) =>
-      isHindi
-        ? voice.lang === "hi-IN" || voice.name.toLowerCase().includes("hindi")
-        : voice.lang.startsWith("en") ||
-        voice.name.toLowerCase().includes("english")
+  
+    // Try to pick an Indian English or Hindi female voice
+    const preferredVoice = voices.find(
+      (voice) =>
+        (voice.lang === "hi-IN" || voice.lang === "en-IN") &&
+        voice.name.toLowerCase().includes("female")
     );
-
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
+  
+    // Fallback to any Indian voice
+    const fallbackVoice = voices.find(
+      (voice) =>
+        (voice.lang === "hi-IN" || voice.lang === "en-IN")
+    );
+  
+    utterance.voice = preferredVoice || fallbackVoice || null;
+  
+    if (utterance.voice) {
+      synth.speak(utterance);
+    } else {
+      console.warn("No suitable voice found.");
     }
-
-    synth.speak(utterance);
   };
+  
 
   useEffect(() => {
     if (

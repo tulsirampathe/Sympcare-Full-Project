@@ -7,7 +7,10 @@ import userRouter from "./routes/userRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
 import whatsappRoutes from "./routes/whatsappRoutes.js"; // Import WhatsApp routes
-import client from "./whatsappClient.js";
+
+import { initializeWhatsApp } from "./whatsappClient.js";
+
+
 
 // app config
 const app = express();
@@ -17,7 +20,7 @@ const port = process.env.PORT || 4000;
 connectDB();
 connectCloudinary();
 
-client.initialize(); // Initialize WhatsApp Client
+initializeWhatsApp();// Initialize WhatsApp Client
 
 // middlewares
 app.use(express.json());

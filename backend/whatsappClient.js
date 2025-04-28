@@ -1,4 +1,3 @@
-// whatsappClient.js
 import whatsappWeb from 'whatsapp-web.js';
 import qrcode from 'qrcode-terminal';
 
@@ -6,40 +5,49 @@ const { Client, LocalAuth } = whatsappWeb;
 
 const client = new Client({
     authStrategy: new LocalAuth(),
-});
+    puppeteer: {
+      headless: true,
+      args: ['--no-sandbox'],
+      executablePath: 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' // your path here
+    }
+  });
+  
 
 // Flag to ensure QR code is generated only once
 let qrGenerated = false;
 
-// Event listener for QR code generation
+// QR Code Event
 client.on('qr', (qr) => {
-    if (!qrGenerated) {
-        qrcode.generate(qr, { small: true });
-        console.log('Please scan the QR code above with your WhatsApp mobile app.');
-        qrGenerated = true;
-    }
+  if (!qrGenerated) {
+    qrcode.generate(qr, { small: true });
+    console.log('📱 Scan the QR code above with your WhatsApp mobile app.');
+    qrGenerated = true;
+  }
 });
 
-// Event listener when the client is ready
+// Ready Event
 client.on('ready', () => {
-    console.log('WhatsApp Web is ready!');
+  console.log('✅ WhatsApp Web client is ready!');
 });
 
-client.on('message', async (message) => {
-    console.log(`Received message from ${message.from}: ${message.body}`);
-
-    // Check if the message is valid (you can add more logic here as per your requirement)
-    if (message.body.toLowerCase() === 'hi') {
-        await message.reply('Hello! How can I assist you today?');
-    }
-
-    // Handle other message types (media, contacts, etc.)
-    // You can add more conditions to process other types of messages if needed
-});
-
-// Event listener for any errors in the WhatsApp client
+// Error Event
 client.on('error', (error) => {
-    console.error('WhatsApp Web Client error:', error);
+  console.error('❌ WhatsApp Web Client error:', error.message || error);
 });
+
+// Disconnection Handler (optional but helpful)
+client.on('disconnected', (reason) => {
+  console.warn('⚠️ WhatsApp disconnected:', reason);
+});
+
+// Export a function to initialize with retry logic
+export const initializeWhatsApp = async () => {
+  try {
+    console.log('🔄 Initializing WhatsApp client...');
+    await client.initialize();
+  } catch (error) {
+    console.error('❌ Failed to initialize WhatsApp client:', error.message || error);
+  }
+};
 
 export default client;
