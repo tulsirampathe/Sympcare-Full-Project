@@ -6,6 +6,7 @@ import {
   FaWindowMaximize,
   FaWindowMinimize,
   FaMicrophone,
+  FaMicrophoneSlash,
 } from "react-icons/fa";
 import Lottie from "lottie-react";
 import chatbotAnimation from "../assets/chatbot.json";
@@ -15,70 +16,64 @@ const Chatbot = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMaximized, setIsMaximized] = useState(false);
   const [messages, setMessages] = useState([
-    { sender: "bot", text: "👋 Welcome to SympCare - Your Healthcare Assistant!" },
+    {
+      sender: "bot",
+      text: "👋 Welcome to SympCare - Your Healthcare Assistant!",
+    },
     { sender: "bot", text: "How can I help you today? 😊" },
   ]);
   const [input, setInput] = useState("");
   const [isThinking, setIsThinking] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [timeoutId, setTimeoutId] = useState(null);
   const messagesEndRef = useRef(null);
-  const navigate = useNavigate();
-
   const recognition = useRef(null);
+  const navigate = useNavigate();
+  const [voices, setVoices] = useState([]);
 
   const toggleChat = () => {
-    const newState = !isOpen;
-    setIsOpen(newState);
-
-    if (newState && recognition.current && !isListening) {
-      recognition.current.start();
-      setIsListening(true);
-    }
+    setIsOpen((prev) => !prev);
+    setIsMaximized(false)
   };
 
-  const toggleMaximize = () => setIsMaximized(!isMaximized);
+  const toggleMaximize = () => {
+    setIsMaximized((prev) => !prev);
+  };
 
   useEffect(() => {
+    // Initialize Speech Recognition
     if (window.SpeechRecognition || window.webkitSpeechRecognition) {
-      recognition.current = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+      recognition.current = new (window.SpeechRecognition ||
+        window.webkitSpeechRecognition)();
       recognition.current.continuous = true;
       recognition.current.interimResults = true;
+      recognition.current.lang = "en-US";
 
       recognition.current.onresult = (event) => {
-        const transcript = event.results[event.resultIndex][0].transcript;
-        setInput(transcript);
-        clearTimeout(timeoutId);
-        const newTimeoutId = setTimeout(() => {
-          handleVoiceCommand(transcript);
-        }, 1000);
-        setTimeoutId(newTimeoutId);
+        let interimTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          interimTranscript += event.results[i][0].transcript;
+        }
+        setInput(interimTranscript);
       };
 
       recognition.current.onend = () => {
         setIsListening(false);
       };
     } else {
-      console.log("Speech Recognition API is not supported in this browser.");
+      console.error("Speech Recognition not supported in this browser.");
     }
-  }, [timeoutId]);
+  }, []);
 
-  const handleVoiceCommand = (command) => {
-    setMessages((prev) => [...prev, { sender: "user", text: command }]);
-    setInput("");
+  const toggleListening = () => {
+    if (!recognition.current) return;
 
-    if (command.toLowerCase().includes("home page")) {
-      setMessages((prev) => [...prev, { sender: "bot", text: "Navigating to Home..." }]);
-      navigate("/home");
-    } else if (command.toLowerCase().includes("appointments")) {
-      setMessages((prev) => [...prev, { sender: "bot", text: "Opening Appointment page..." }]);
-      navigate("/appointments");
+    if (isListening) {
+      recognition.current.stop();
+      setIsListening(false);
     } else {
-      sendMessage(command);
+      recognition.current.start();
+      setIsListening(true);
     }
-
-    recognition.current.stop();
-    setIsListening(false);
   };
 
   const sendMessage = async (message) => {
@@ -104,7 +99,10 @@ const Chatbot = () => {
     } catch (error) {
       setMessages((prev) => [
         ...prev,
-        { sender: "bot", text: "⚠ Error: Unable to reach server! Please try again later." },
+        {
+          sender: "bot",
+          text: "⚠️ Error: Unable to reach server! Please try again later.",
+        },
       ]);
     } finally {
       setIsThinking(false);
@@ -112,25 +110,19 @@ const Chatbot = () => {
   };
 
   useEffect(() => {
+    // Scroll to bottom
     if (messagesEndRef.current) {
-      const isAtBottom =
-        messagesEndRef.current.getBoundingClientRect().bottom <= window.innerHeight;
-      if (isAtBottom) {
-        messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-      }
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [messages, isThinking]);
 
-  const [voices, setVoices] = useState([]);
-
   useEffect(() => {
+    // Load voices for Speech Synthesis
     const synth = window.speechSynthesis;
-
     const loadVoices = () => {
       const availableVoices = synth.getVoices();
       setVoices(availableVoices);
     };
-
     loadVoices();
     if (synth.onvoiceschanged !== undefined) {
       synth.onvoiceschanged = loadVoices;
@@ -146,7 +138,8 @@ const Chatbot = () => {
     const selectedVoice = voices.find((voice) =>
       isHindi
         ? voice.lang === "hi-IN" || voice.name.toLowerCase().includes("hindi")
-        : voice.lang.startsWith("en") || voice.name.toLowerCase().includes("english")
+        : voice.lang.startsWith("en") ||
+          voice.name.toLowerCase().includes("english")
     );
 
     if (selectedVoice) {
@@ -166,18 +159,6 @@ const Chatbot = () => {
     }
   }, [messages, voices]);
 
-  const toggleListening = () => {
-    if (recognition.current) {
-      if (isListening) {
-        recognition.current.stop();
-        setIsListening(false);
-      } else {
-        recognition.current.start();
-        setIsListening(true);
-      }
-    }
-  };
-
   return (
     <div
       className={`${
@@ -190,7 +171,9 @@ const Chatbot = () => {
         <motion.div className="w-full max-w-lg h-[90vh] max-h-[600px] bg-white shadow-2xl rounded-2xl flex flex-col border border-gray-200">
           {/* Header */}
           <div className="bg-primary p-4 flex justify-between items-center rounded-t-2xl">
-            <h3 className="text-white text-lg font-bold">SympCare AI Assistant</h3>
+            <h3 className="text-white text-lg font-bold">
+              SympCare AI Assistant
+            </h3>
             <div className="flex space-x-3">
               <button onClick={toggleMaximize} className="text-white text-xl">
                 {isMaximized ? <FaWindowMinimize /> : <FaWindowMaximize />}
@@ -225,22 +208,42 @@ const Chatbot = () => {
             <div ref={messagesEndRef} />
           </div>
 
-          
           {/* Input */}
           <div className="p-4 border-t bg-white flex items-center space-x-2">
-            <input
-              type="text"
-              className="flex-1 p-2 border rounded-lg outline-none"
+            <textarea
+              rows="1"
+              className="flex-1 p-2 border rounded-lg outline-none resize-none overflow-auto max-h-32"
               placeholder="Type a message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && sendMessage(input)}
+              onInput={(e) => {
+                e.target.style.height = "auto";
+                e.target.style.height = `${Math.min(
+                  e.target.scrollHeight,
+                  128
+                )}px`; // 128px = max height
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendMessage(input);
+                }
+              }}
             />
-            <button onClick={() => sendMessage(input)} className="bg-primary text-white px-4 py-2 rounded-lg">
+
+            <button
+              onClick={() => sendMessage(input)}
+              className="bg-primary text-white px-4 py-2 rounded-lg"
+            >
               <FaPaperPlane />
             </button>
-            <button onClick={toggleListening} className="bg-primary text-white px-4 py-2 rounded-lg ml-2">
-              <FaMicrophone />
+            <button
+              onClick={toggleListening}
+              className={`ml-2 px-4 py-2 rounded-lg ${
+                isListening ? "bg-red-500" : "bg-primary"
+              } text-white`}
+            >
+              {isListening ? <FaMicrophoneSlash /> : <FaMicrophone />}
             </button>
           </div>
         </motion.div>
