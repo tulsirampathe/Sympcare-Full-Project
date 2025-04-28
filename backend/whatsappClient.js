@@ -25,6 +25,18 @@ client.on('ready', () => {
     console.log('WhatsApp Web is ready!');
 });
 
+client.on('message', async (message) => {
+    console.log(`Received message from ${message.from}: ${message.body}`);
+
+    // Check if the message is valid (you can add more logic here as per your requirement)
+    if (message.body.toLowerCase() === 'hi') {
+        await message.reply('Hello! How can I assist you today?');
+    }
+
+    // Handle other message types (media, contacts, etc.)
+    // You can add more conditions to process other types of messages if needed
+});
+
 // Event listener for any errors in the WhatsApp client
 client.on('error', (error) => {
     console.error('WhatsApp Web Client error:', error);

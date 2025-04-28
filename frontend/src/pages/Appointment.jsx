@@ -94,7 +94,7 @@ const Appointment = () => {
   //     );
   //     if (data.success) {
   //       console.log("appointment: ", data);
-        
+
   //       toast.success(data.message);
   //       getDoctosData();
   //       navigate("/my-appointments");
@@ -107,42 +107,42 @@ const Appointment = () => {
   // };
 
   // Book appointment
-const bookAppointment = async () => {
-  if (!token) {
-    toast.warning("Login to book an appointment");
-    return navigate("/login");
-  }
+  const bookAppointment = async () => {
+    if (!token) {
+      toast.warning("Login to book an appointment");
+      return navigate("/login");
+    }
 
-  if (!slotTime) {
-    toast.warning("Please select a time slot");
-    return;
-  }
+    if (!slotTime) {
+      toast.warning("Please select a time slot");
+      return;
+    }
 
-  let day = selectedDate.getDate();
-  let month = selectedDate.getMonth() + 1;
-  let year = selectedDate.getFullYear();
-  const slotDate = `${day}_${month}_${year}`;
+    let day = selectedDate.getDate();
+    let month = selectedDate.getMonth() + 1;
+    let year = selectedDate.getFullYear();
+    const slotDate = `${day}_${month}_${year}`;
 
-  try {
-    const { data } = await axios.post(
-      `${backendUrl}/api/user/book-appointment`,
-      { docId, slotDate, slotTime },
-      { headers: { token } }
-    );
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/user/book-appointment`,
+        { docId, slotDate, slotTime },
+        { headers: { token } }
+      );
 
-    if (data.success) {
-      console.log("appointment: ", data);
-      toast.success(data.message);
-      getDoctosData();
-      navigate("/my-appointments");
+      if (data.success) {
+        console.log("appointment: ", data);
+        toast.success(data.message);
+        getDoctosData();
+        navigate("/my-appointments");
 
-      // 📲 SEND WHATSAPP MESSAGE
-      const appointment = data.appointmentData;
-      const doctor = appointment.docData;
-      const user = appointment.userData;
+        // 📲 SEND WHATSAPP MESSAGE
+        const appointment = data.appointmentData;
+        const doctor = appointment.docData;
+        const user = appointment.userData;
 
-      const formattedDate = slotDate.replace(/_/g, '/');
-      const message = `👨‍⚕️ *Appointment Confirmation - SympCare*
+        const formattedDate = slotDate.replace(/_/g, "/");
+        const message = `👨‍⚕️ *Appointment Confirmation - SympCare*
 
 Hello ${user.name},
 
@@ -159,25 +159,19 @@ Stay healthy,
 Team *SympCare*
 `;
 
-      // Send WhatsApp message
-      await axios.post("http://localhost:4000/api/whatsapp/send-message", {
-        messages: [
-          {
-            type: "appointment",
-            numbers: [user.phone],
-            message,
-          },
-        ],
-      });
-
-    } else {
-      toast.error(data.message);
+        // Send WhatsApp message
+        await axios.post("http://localhost:4000/api/whatsapp/send-message", {
+          type: "appointment",
+          number: user.phone,
+          message,
+        });
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
     }
-  } catch (error) {
-    toast.error(error.message);
-  }
-};
-
+  };
 
   useEffect(() => {
     if (doctors.length > 0) {
