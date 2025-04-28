@@ -1,8 +1,7 @@
-import React, { useState } from "react";
 import axios from "axios";
-import { motion } from "framer-motion";
-import { symptomsList, diseaseInfo } from "../data/data";
+import React, { useState } from "react";
 import { assets } from "../assets/assets";
+import { diseaseInfo, symptomsList } from "../data/data";
 
 const API_KEY_PIXABAY = "49856975-b50f4f2288e42fd6f79dc9c5d";
 const GEMINI_API_KEY = "AIzaSyBadJ5jdznsttPKQLyrDzZTEbSNvKzTt4U";
@@ -46,7 +45,6 @@ const SymptomAnalysis = () => {
       const predictedDisease = response.data["Most Accurate Disease"];
       const diseaseDetails = diseaseInfo[predictedDisease];
       setPrediction(diseaseDetails);
-      await fetchAyurvedicRemedies(predictedDisease);
       getLocationAndFetch();
     } catch (err) {
       console.error(err);
@@ -56,102 +54,6 @@ const SymptomAnalysis = () => {
     }
   };
 
-  const fetchAyurvedicRemedies = async (diseaseName) => {
-    setLoadingRemedies(true);
-
-    const prompt = `You are an expert Ayurvedic doctor. Provide a concise and accurate Ayurvedic treatment plan for the disease: ${diseaseName}.
-  
-  Include the following in exactly 2–3 lines per item:
-  1. At least 3 Ayurvedic herbs with:
-     - name
-     - botanical_name
-     - description (2 lines max, accurate)
-     - benefits (2 lines max)
-     - use (2 lines on how to use)
-     - keyword (for image search)
-  
-  2. Ayurvedic healing practices specific to the disease (2–3 lines)
-  3. Diet and lifestyle suggestions (2–3 lines)
-  
-  Return the output in clean and strictly formatted JSON (no markdown, no extra text). Format:
-  
-  {
-    "treatment": "Short general treatment advice (2 lines)",
-    "healing_practices": "Text with Ayurvedic healing practices (2–3 lines)",
-    "diet_lifestyle": "Text with diet and lifestyle tips (2–3 lines)",
-    "herbs": [
-      {
-        "name": "Herb Name",
-        "botanical_name": "Botanical Name",
-        "description": "2-line accurate description",
-        "benefits": "2-line benefit summary",
-        "use": "2-line usage instruction",
-        "keyword": "search keyword"
-      }
-    ]
-  }
-  `;
-
-
-    try {
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            contents: [
-              {
-                parts: [{ text: prompt }],
-              },
-            ],
-            generationConfig: {
-              temperature: 0.7,
-            },
-          }),
-        }
-      );
-
-      const data = await res.json();
-      const responseText = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-
-      // Clean markdown-style backticks
-      const cleanedText = responseText.replace(/```json|```/g, "").trim();
-
-      const json = JSON.parse(cleanedText);
-      setAyurvedicTreatment(json); // Don't forget this!
-      fetchHerbImages(json.herbs); // Optionally trigger image loading here
-      return json;
-
-    } catch (err) {
-      console.error("Error fetching Ayurvedic remedy:", err);
-      setError("Failed to fetch Ayurvedic remedy.");
-      return null;
-    } finally {
-      setLoadingRemedies(false); // ⬅️ Stop spinner
-    }
-  };
-
-
-
-  const fetchHerbImages = async (herbs) => {
-    const images = {};
-    for (const herb of herbs) {
-      try {
-        const res = await axios.get(
-          `https://pixabay.com/api/?key=${API_KEY_PIXABAY}&q=${encodeURIComponent(
-            herb.name
-          )}&image_type=photo&per_page=3&safesearch=true`
-        );
-        images[herb.name] = res.data.hits[0]?.webformatURL;
-      } catch {
-        images[herb.name] = assets.defaultHerbImage;
-      }
-    }
-    setHerbImages(images);
-  };
 
   const getLocationAndFetch = () => {
     if (!navigator.geolocation) {
@@ -280,80 +182,6 @@ const SymptomAnalysis = () => {
       )}
 
 
-      {/* Ayurvedic Remedies */}
-      {loadingRemedies ? (
-        <div className="mt-16 text-center">
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-green-600 border-solid"></div>
-          </div>
-          <p className="text-green-600 mt-4">Loading Ayurvedic Remedies...</p>
-        </div>
-      ) : ayurvedicTreatment && (
-
-        <div className="mt-16 bg-white p-8 rounded-lg shadow-lg">
-          <h2 className="text-3xl font-bold  text-center mb-10">
-            <span className="text-green-600"> Ayurvedic</span> Remedies
-          </h2>
-
-          {/* General Treatment */}
-          <p className="text-center text-lg text-gray-700 mb-6">
-            <strong className="text-primary">Suggested Treatment:</strong> {ayurvedicTreatment.treatment}
-          </p>
-
-          {/* Herbs Grid */}
-          <div className="grid gap-8 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            {ayurvedicTreatment.herbs.map((herb, index) => (
-              <motion.div
-                key={index}
-                className="bg-green-50 p-6 rounded-2xl shadow-md"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.2 }}
-                viewport={{ once: true }}
-              >
-                <img
-                  src={herbImages[herb.name] || assets.defaultHerbImage}
-                  alt={herb.name}
-                  className="w-full h-[180px] object-cover rounded-xl mb-4"
-                />
-                <h3 className="text-xl font-semibold text-green-700 mb-1">{herb.name}</h3>
-                <p className="text-sm text-gray-500 italic mb-2">
-                  <strong>Botanical Name:</strong> {herb.botanical_name}
-                </p>
-                <p className="text-gray-700 mb-2">{herb.description}</p>
-                <p className="text-gray-600 text-sm mb-1"><strong>Benefits:</strong> {herb.benefits}</p>
-                <p className="text-sm text-gray-500"><strong>Usage:</strong> {herb.use}</p>
-              </motion.div>
-            ))}
-          </div>
-
-          {/* Ayurvedic Practices & Diet Section */}
-          <div className="mt-16 bg-green-100 rounded-2xl p-10 shadow-inner">
-            <h3 className="text-2xl font-bold text-center text-green-800 mb-8">
-              Ayurvedic Healing Practices & Lifestyle
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-800">
-              <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-green-500">
-                <h4 className="text-xl font-semibold text-green-700 mb-2">Healing Practices</h4>
-                <p className="text-gray-700 leading-relaxed">
-                  {ayurvedicTreatment.healing_practices}
-                </p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-md border-l-4 border-yellow-500">
-                <h4 className="text-xl font-semibold text-yellow-700 mb-2">Diet & Lifestyle</h4>
-                <p className="text-gray-700 leading-relaxed">
-                  {ayurvedicTreatment.diet_lifestyle}
-                </p>
-              </div>
-            </div>
-          </div>
-
-
-
-        </div>
-      )}
-
-
 
       {location && (
         <div className="mt-6 p-4 bg-blue-100 rounded shadow">
@@ -372,7 +200,6 @@ const SymptomAnalysis = () => {
                   >
                     <h4 className="text-lg font-bold text-blue-700">{center.name}</h4>
                     <p className="text-sm text-gray-600">{center.address}</p>
-                    <p className="text-sm text-green-600 mt-1">~ {center.distance/1000} km away</p>
                     <button
                       onClick={() =>
                         window.open(

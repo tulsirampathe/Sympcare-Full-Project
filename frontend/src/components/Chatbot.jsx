@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
+import ReactMarkdown from "react-markdown";
 import {
   FaPaperPlane,
   FaTimes,
@@ -31,9 +32,14 @@ const Chatbot = () => {
   const [voices, setVoices] = useState([]);
 
   const toggleChat = () => {
+    if (isOpen) {
+      // Chat is being closed, stop any ongoing speech
+      window.speechSynthesis.cancel();
+    }
     setIsOpen((prev) => !prev);
-    setIsMaximized(false)
+    setIsMaximized(false);
   };
+  
 
   const toggleMaximize = () => {
     setIsMaximized((prev) => !prev);
@@ -139,7 +145,7 @@ const Chatbot = () => {
       isHindi
         ? voice.lang === "hi-IN" || voice.name.toLowerCase().includes("hindi")
         : voice.lang.startsWith("en") ||
-          voice.name.toLowerCase().includes("english")
+        voice.name.toLowerCase().includes("english")
     );
 
     if (selectedVoice) {
@@ -161,11 +167,10 @@ const Chatbot = () => {
 
   return (
     <div
-      className={`${
-        isMaximized
-          ? "fixed inset-0 flex justify-center items-center z-50"
-          : "fixed bottom-5 right-5 z-50"
-      }`}
+      className={`${isMaximized
+        ? "fixed inset-0 flex justify-center items-center z-50"
+        : "fixed bottom-5 right-5 z-50"
+        }`}
     >
       {isOpen ? (
         <motion.div className="w-full max-w-lg h-[90vh] max-h-[600px] bg-white shadow-2xl rounded-2xl flex flex-col border border-gray-200">
@@ -186,18 +191,25 @@ const Chatbot = () => {
 
           {/* Messages */}
           <div className="p-4 h-full overflow-y-auto flex flex-col space-y-3 bg-gray-50">
-            {messages.map((msg, index) => (
-              <motion.div
-                key={index}
-                className={`max-w-xs p-3 rounded-lg shadow-md ${
-                  msg.sender === "bot"
+
+            {
+              messages.map((msg, index) => (
+                <motion.div
+                  key={index}
+                  className={`max-w-xs p-3 rounded-lg shadow-md whitespace-pre-wrap ${msg.sender === "bot"
                     ? "bg-primary text-white self-start"
                     : "bg-blue-500 text-white self-end"
-                }`}
-              >
-                {msg.text}
-              </motion.div>
-            ))}
+                    }`}
+                >
+                  {msg.sender === "bot" ? (
+                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  ) : (
+                    msg.text
+                  )}
+                </motion.div>
+              ))
+            }
+
             {isThinking && (
               <div className="self-start flex space-x-1 p-2">
                 <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
@@ -239,9 +251,8 @@ const Chatbot = () => {
             </button>
             <button
               onClick={toggleListening}
-              className={`ml-2 px-4 py-2 rounded-lg ${
-                isListening ? "bg-red-500" : "bg-primary"
-              } text-white`}
+              className={`ml-2 px-4 py-2 rounded-lg ${isListening ? "bg-red-500" : "bg-primary"
+                } text-white`}
             >
               {isListening ? <FaMicrophoneSlash /> : <FaMicrophone />}
             </button>
