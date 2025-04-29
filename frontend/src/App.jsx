@@ -24,6 +24,7 @@ import SymptomAnalysis from "./pages/SymptomAnalysis";
 import HealthEducation from "./components/HealthEducation";
 import AyurTherapies from "./components/AyurTherapies";
 import Therapie from "./pages/Therapie";
+import NutritionCheck from "./pages/NutritionCheck";
 
 const App = () => {
   return (
@@ -46,6 +47,7 @@ const App = () => {
         <Route path="/symptom-analysis" element={<SymptomAnalysis />} />
         <Route path="/health-assessment" element={<MentalHealthAssessment />} />
         <Route path="/health-education" element={<HealthEducation />} />
+        <Route path="/nutrition-check" element={<NutritionCheck />} />
         {/* <Route path="/ayur-therapies" element={<AyurTherapies />} />
         <Route path="/therapie" element={<Therapie />} /> */}
       </Routes>

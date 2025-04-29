@@ -1,94 +1,145 @@
-import React from "react";
+import { motion } from "framer-motion";
+import { FaClock, FaUserCheck, FaHeartbeat, FaRocket } from "react-icons/fa";
 import { assets } from "../assets/assets";
 
 const About = () => {
   return (
-    <div className="px-6 md:px-12 lg:px-24">
+    <div className="px-6 md:px-12 lg:px-24 py-20 bg-gradient-to-b from-slate-50 to-white">
       {/* Section Title */}
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-800">
-          ABOUT <span className="text-primary">US</span>
+      <motion.div
+        className="text-center mb-16"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="inline-flex items-center mb-4 space-x-3">
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+          <h3 className="text-lg font-semibold text-primary">Who We Are</h3>
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+        </div>
+        <h2 className="text-5xl font-bold text-gray-900 mb-4">
+          Transforming <span className="text-primary">Healthcare</span>
         </h2>
-        <p className="text-gray-600 mt-2">
-          Your intelligent healthcare assistant
+        <p className="text-gray-600 max-w-3xl mx-auto text-xl leading-relaxed">
+          Pioneering AI-driven health solutions for better patient outcomes
         </p>
-      </div>
+      </motion.div>
 
       {/* Content Section */}
-      <div className="mt-12 flex flex-col md:flex-row items-center gap-12">
+      <div className="flex flex-col md:flex-row items-center gap-12 mb-24">
         {/* Image Section */}
-        <div className="md:w-1/2 flex justify-center">
+        <motion.div
+          className="md:w-1/2 flex justify-center"
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8 }}
+        >
           <img
-            className="w-full max-w-md bg-primary rounded-lg shadow-xl hover:scale-105 transition-transform duration-300"
+            className="w-full max-w-xl rounded-2xl shadow-xl hover:scale-105 transition-transform duration-300"
             src={assets.about_image}
             alt="About SympCare"
           />
-        </div>
+        </motion.div>
 
         {/* Text Content */}
-        <div className="md:w-1/2 text-gray-700 space-y-6">
-          <h3 className="text-2xl font-semibold text-gray-800">
-            Welcome to <span className="text-blue-600">SympCare</span>
+        <motion.div
+          className="md:w-1/2 text-gray-700 space-y-8"
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          <h3 className="text-4xl font-bold text-gray-900">
+            Revolutionizing <span className="text-primary">Healthcare</span>
           </h3>
-          <p>
-            We simplify patient care and medical management through AI-driven
-            real-time symptom analysis, smart appointment scheduling, and
-            personalized health insights.
+          <p className="text-lg leading-relaxed">
+            We're redefining medical care through intelligent symptom analysis
+            and predictive health management solutions.
           </p>
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-gray-800">
-                Empowering Smarter Healthcare
+          
+          <div className="space-y-6">
+            <motion.div 
+              className="p-6 bg-white rounded-xl shadow-sm border border-slate-100"
+              whileHover={{ y: -5 }}
+            >
+              <h4 className="text-xl font-bold text-gray-900 mb-3">
+                AI-Powered Diagnostics
               </h4>
-              <p>
-                Our platform integrates AI and machine learning to streamline
-                healthcare access, helping both patients and healthcare
-                providers.
+              <p className="text-gray-600">
+                Advanced machine learning algorithms providing accurate
+                preliminary assessments and care recommendations.
               </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-gray-800">Our Vision</h4>
-              <p>
-                We aim to revolutionize healthcare accessibility with AI-driven
-                diagnostics, reducing wait times and enhancing proactive health
-                management.
+            </motion.div>
+
+            <motion.div 
+              className="p-6 bg-white rounded-xl shadow-sm border border-slate-100"
+              whileHover={{ y: -5 }}
+            >
+              <h4 className="text-xl font-bold text-gray-900 mb-3">
+                Proactive Health Management
+              </h4>
+              <p className="text-gray-600">
+                Continuous monitoring and preventive care strategies for
+                long-term wellness.
               </p>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Why Choose Us Section */}
-      <div className="text-center mt-16">
-        <h2 className="text-3xl font-bold text-gray-800">
-          WHY <span className="text-primary">CHOOSE US?</span>
+      <motion.div
+        className="text-center mb-16"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="inline-flex items-center mb-4 space-x-3">
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+          <h3 className="text-lg font-semibold text-primary">Our Advantages</h3>
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+        </div>
+        <h2 className="text-5xl font-bold text-gray-900 mb-4">
+          Why <span className="text-primary">Choose Us?</span>
         </h2>
-      </div>
+      </motion.div>
 
-      <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
           {
-            title: "EFFICIENCY",
-            text: "Streamlined appointment scheduling for your busy lifestyle.",
+            title: "Instant Access",
+            text: "24/7 availability with immediate symptom assessment",
+            icon: <FaClock className="text-2xl text-white" />,
+            color: "bg-blue-500",
           },
           {
-            title: "CONVENIENCE",
-            text: "Access trusted healthcare professionals in your area.",
+            title: "Expert Validation",
+            text: "AI recommendations verified by medical professionals",
+            icon: <FaUserCheck className="text-2xl text-white" />,
+            color: "bg-green-500",
           },
           {
-            title: "PERSONALIZATION",
-            text: "Tailored recommendations and health reminders.",
+            title: "Preventive Care",
+            text: "Early detection systems for proactive health management",
+            icon: <FaHeartbeat className="text-2xl text-white" />,
+            color: "bg-red-500",
           },
         ].map((item, index) => (
-          <div
+          <motion.div
             key={index}
-            className="border p-8 rounded-lg text-center bg-white shadow-md hover:bg-primary hover:text-white transition-all duration-300 cursor-pointer"
+            className="group p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-slate-100"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            whileHover={{ y: -10 }}
           >
-            <h3 className="text-xl font-semibold">{item.title}</h3>
-            <p className="mt-2 text-gray-600 group-hover:text-white">
-              {item.text}
-            </p>
-          </div>
+            <div className={`${item.color} w-14 h-14 rounded-xl mb-6 flex items-center justify-center transform group-hover:rotate-12 transition-all duration-300`}>
+              {item.icon}
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4">
+              {item.title}
+            </h3>
+            <p className="text-gray-600 text-lg">{item.text}</p>
+          </motion.div>
         ))}
       </div>
     </div>

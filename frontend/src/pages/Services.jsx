@@ -3,8 +3,10 @@ import React from "react";
 import {
   FaCalendarCheck,
   FaHeartbeat,
+  FaSeedling,
   FaStethoscope,
   FaUserMd,
+  FaArrowRight,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { assets } from "../assets/assets";
@@ -15,52 +17,66 @@ const Services = () => {
   const services = [
     {
       title: "Comprehensive Health Assessments",
-      text: "Get accurate symptom analysis and initial diagnosis guidance.",
-      icon: <FaStethoscope className="text-4xl text-green-600" />,
+      text: "Advanced symptom analysis with AI-powered diagnosis guidance",
+      icon: <FaStethoscope className="text-2xl text-white" />,
+      color: "bg-green-500",
       route: "/symptom-analysis",
     },
     {
-      title: "Hassle-Free Appointment Booking",
-      text: "Easily schedule your doctor appointments online with just a few clicks.",
-      icon: <FaCalendarCheck className="text-4xl text-blue-600" />,
+      title: "Instant Appointment Booking",
+      text: "Seamless doctor scheduling with real-time availability",
+      icon: <FaCalendarCheck className="text-2xl text-white" />,
+      color: "bg-blue-500",
       route: "/doctors",
     },
     {
-      title: "Advanced Skin Disease Detection",
-      text: "AI-powered skin analysis to detect potential dermatological conditions.",
-      icon: <FaHeartbeat className="text-4xl text-red-600" />,
+      title: "Skin Disease Detection",
+      text: "AI dermatology analysis with instant condition screening",
+      icon: <FaHeartbeat className="text-2xl text-white" />,
+      color: "bg-red-500",
       route: "/skin-detection",
+    },
+    {
+      title: "Nutrition Analysis",
+      text: "Personalized dietary recommendations and meal planning",
+      icon: <FaSeedling className="text-2xl text-white" />,
+      color: "bg-orange-500",
+      route: "/nutrition-check",
     },
   ];
 
   const mentalService = {
-    title: "AI-Powered Mental Wellness",
-    text: "Experience 24/7 AI-driven emotional support, personalized mental health assessments, and instant professional insights for holistic well-being.",
-    icon: <FaUserMd className="text-6xl text-blue-600" />,
+    title: "AI Mental Wellness Assistant",
+    text: "24/7 emotional support with cognitive behavioral therapy techniques and mood tracking",
+    icon: <FaUserMd className="text-3xl text-white" />,
     route: "/health-assessment",
   };
 
   return (
-    <section className="px-6 py-16" id="services">
+    <section className="px-6 py-20" id="services">
       {/* Main Services Section */}
       <motion.div
         className="text-center mb-16"
         initial={{ opacity: 0, y: -50 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 0.8 }}
       >
-        <h2 className="text-4xl font-bold text-gray-800 mb-4">
-          Our <span className="text-primary">Healthcare Services</span>
+        <div className="inline-flex items-center mb-4 space-x-3">
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+          <h3 className="text-lg font-semibold text-primary">Our Services</h3>
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+        </div>
+        <h2 className="text-5xl font-bold text-gray-900 mb-4">
+          Transformative <span className="text-primary">Healthcare</span>
         </h2>
-        <p className="text-gray-600 max-w-3xl mx-auto text-lg">
-          Comprehensive digital health solutions supporting your wellness
-          journey.
+        <p className="text-gray-600 max-w-3xl mx-auto text-xl leading-relaxed">
+          Next-generation medical solutions powered by AI and expert care
         </p>
       </motion.div>
 
-      {/* Other Healthcare Services */}
+      {/* Services Grid */}
       <motion.div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-24"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 0.3 }}
@@ -72,95 +88,70 @@ const Services = () => {
               navigate(service.route);
               scrollTo(0, 0);
             }}
-            className="flex flex-col items-center p-8 bg-white shadow-lg rounded-xl cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5, delay: index * 0.2 }}
-            whileHover={{ scale: 1.05, rotate: 2 }}
+            className="group relative p-8 bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer border border-slate-100 hover:border-primary/20"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            whileHover={{ y: -10 }}
           >
-            <motion.div
-              className="mb-6"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              whileHover={{ rotate: 10 }}
-            >
+            <div className={`${service.color} w-14 h-14 rounded-xl mb-6 flex items-center justify-center transform group-hover:rotate-12 transition-all duration-300`}>
               {service.icon}
-            </motion.div>
-            <h3 className="text-xl font-semibold text-gray-800 text-center mb-3">
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
               {service.title}
             </h3>
-            <p className="text-gray-600 text-center">{service.text}</p>
+            <p className="text-gray-600 text-lg mb-6">{service.text}</p>
+            <div className="flex items-center text-primary font-semibold group-hover:translate-x-2 transition-transform duration-300">
+              <span>Explore Service</span>
+              <FaArrowRight className="ml-2 text-sm" />
+            </div>
           </motion.div>
         ))}
       </motion.div>
 
-      {/* Mental Health AI Assistant - Secondary Highlight */}
-      <motion.div
-        className="text-center mb-12"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1, delay: 0.2 }}
-      >
-        <h3 className="text-3xl font-bold text-gray-800">
-          Mental Health <span className="text-primary">AI Assistant</span>
-        </h3>
-        <p className="text-gray-600 max-w-2xl mx-auto mt-3">
-          Revolutionizing mental healthcare through AI-powered emotional support
-          and instant psychological assessments.
-        </p>
-      </motion.div>
-
-      <div className="flex flex-col md:flex-row items-center gap-12">
-        {/* Chatbot Illustration */}
-        <motion.div
-          className="md:w-2/3 flex justify-center"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
-          <img
-            className="w-full max-w-md bg-primary rounded-lg shadow-xl hover:scale-105 transition-transform duration-300"
-            src={assets.Mental_Health}
-            alt="Mental Health AI Chatbot"
-          />
-        </motion.div>
-
-        {/* Service Card */}
-        <motion.div
-          className="flex flex-col items-center p-8 bg-white shadow-lg rounded-xl cursor-pointer transition-all duration-300 hover:scale-105 hover:shadow-xl"
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          whileHover={{ scale: 1.1 }}
-          onClick={() => {
-            navigate(mentalService.route);
-            scrollTo(0, 0);
-          }}
-        >
-          {/* Animated Icon */}
+      {/* Mental Health Highlight */}
+      <div className="max-w-7xl mx-auto bg-gradient-to-r from-blue-600 to-indigo-700 rounded-3xl shadow-2xl overflow-hidden">
+        <div className="flex flex-col md:flex-row items-center">
           <motion.div
-            className="mb-6 flex justify-center items-center w-16 h-16 rounded-full shadow-lg"
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 120, delay: 0.5 }}
-            whileHover={{ rotate: 10 }}
+            className="md:w-1/2 p-12"
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
           >
-            {mentalService.icon}
+            <div className="bg-white/10 w-fit p-4 rounded-2xl mb-8">
+              {mentalService.icon}
+            </div>
+            <h3 className="text-4xl font-bold text-white mb-6 leading-snug">
+              {mentalService.title}
+            </h3>
+            <p className="text-blue-100 text-lg mb-8">{mentalService.text}</p>
+            <motion.button
+              onClick={() => {
+                navigate(mentalService.route);
+                scrollTo(0, 0);
+              }}
+              className="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold flex items-center gap-3 hover:gap-4 transition-all duration-300 hover:shadow-lg"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Start Free Assessment
+              <FaArrowRight className="text-sm" />
+            </motion.button>
           </motion.div>
 
-          <h3 className="text-xl font-semibold text-gray-800 text-center mb-3">
-            {mentalService.title}
-          </h3>
-          <p className="text-gray-600 text-center">{mentalService.text}</p>
-          <motion.button
-            className="mt-4 bg-primary text-white px-6 py-2 rounded-full font-semibold hover:bg-primary-dark transition-colors"
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+          <motion.div
+            className="md:w-1/2 h-full"
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
           >
-            Try AI Assistant Now
-          </motion.button>
-        </motion.div>
+            <img
+              className="w-full h-full object-cover"
+              src={assets.Mental_Health}
+              alt="Mental Health Support"
+            />
+          </motion.div>
+        </div>
       </div>
     </section>
   );
