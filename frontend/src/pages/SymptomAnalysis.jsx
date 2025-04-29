@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { assets } from "../assets/assets";
 import { diseaseInfo, symptomsList } from "../data/data";
 
+
 const API_KEY_PIXABAY = "49856975-b50f4f2288e42fd6f79dc9c5d";
 const GEMINI_API_KEY = "AIzaSyBadJ5jdznsttPKQLyrDzZTEbSNvKzTt4U";
 

@@ -21,6 +21,28 @@ export const symptomsList = [
     "scurring", "skin_peeling", "silver_like_dusting", "small_dents_in_nails", "inflammatory_nails",
     "blister", "red_sore_around_nose", "yellow_crust_ooze"
   ];
+export const predefinedSymptoms = [
+  "Hair fall",
+  "Brittle nails",
+  "Fatigue",
+  "Dry skin",
+  "Weak immunity",
+  "Muscle cramps",
+  "Pale skin",
+  "Irritability",
+  "Poor concentration",
+  "Cracks at mouth corners",
+  "Dandruff",
+  "Bone pain",
+  "Frequent infections",
+  "Bleeding gums",
+  "Swollen tongue",
+  "Night blindness",
+  "Poor wound healing",
+  "Depression",
+  "Anemia",
+  "Numbness or tingling"
+];
 
 export  const diseaseInfo = {
     "Fungal infection": {
