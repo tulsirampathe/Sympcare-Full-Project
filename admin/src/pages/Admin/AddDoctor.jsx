@@ -10,6 +10,7 @@ const AddDoctor = () => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState(""); // <-- NEW FIELD
   const [experience, setExperience] = useState("1 Year");
   const [fees, setFees] = useState("");
   const [about, setAbout] = useState("");
@@ -25,16 +26,14 @@ const AddDoctor = () => {
     event.preventDefault();
 
     try {
-      if (!docImg) {
-        return toast.error("Image Not Selected");
-      }
+      if (!docImg) return toast.error("Image Not Selected");
 
       const formData = new FormData();
-
       formData.append("image", docImg);
       formData.append("name", name);
       formData.append("email", email);
       formData.append("password", password);
+      formData.append("phone", phone); // <-- APPENDING PHONE
       formData.append("experience", experience);
       formData.append("fees", Number(fees));
       formData.append("about", about);
@@ -45,22 +44,19 @@ const AddDoctor = () => {
         JSON.stringify({ line1: address1, line2: address2 })
       );
 
-      // console log formdata
-      formData.forEach((value, key) => {
-        console.log(`${key}: ${value}`);
-      });
-
       const { data } = await axios.post(
         backendUrl + "/api/admin/add-doctor",
         formData,
         { headers: { aToken } }
       );
+
       if (data.success) {
         toast.success(data.message);
         setDocImg(false);
         setName("");
-        setPassword("");
         setEmail("");
+        setPassword("");
+        setPhone(""); // Reset phone field
         setAddress1("");
         setAddress2("");
         setDegree("");
@@ -71,7 +67,7 @@ const AddDoctor = () => {
       }
     } catch (error) {
       toast.error(error.message);
-      console.log(error);
+      console.error(error);
     }
   };
 
@@ -91,7 +87,6 @@ const AddDoctor = () => {
           <input
             onChange={(e) => setDocImg(e.target.files[0])}
             type="file"
-            name=""
             id="doc-img"
             hidden
           />
@@ -139,6 +134,18 @@ const AddDoctor = () => {
             </div>
 
             <div className="flex-1 flex flex-col gap-1">
+              <p>Phone Number</p>
+              <input
+                onChange={(e) => setPhone(e.target.value)}
+                value={phone}
+                className="border rounded px-3 py-2"
+                type="tel"
+                placeholder="Phone Number"
+                required
+              />
+            </div>
+
+            <div className="flex-1 flex flex-col gap-1">
               <p>Experience</p>
               <select
                 onChange={(e) => setExperience(e.target.value)}
@@ -154,7 +161,7 @@ const AddDoctor = () => {
                 <option value="8 Year">8 Years</option>
                 <option value="9 Year">9 Years</option>
                 <option value="10 Year">10 Years</option>
-                <option value="More then 10 Year">More then 10 Years</option>
+                <option value="More then 10 Year">More than 10 Years</option>
               </select>
             </div>
 
@@ -193,9 +200,7 @@ const AddDoctor = () => {
                 <option value="Shirodhara">Shirodhara</option>
                 <option value="Marma">Marma</option>
                 <option value="Kati Basti">Kati Basti</option>
-                <option value="Hands/Head/Face/Feet Treatment">
-                  Hands/Head/Face/Feet Treatment
-                </option>
+                <option value="Hands/Head/Face/Feet Treatment">Hands/Head/Face/Feet Treatment</option>
                 <option value="Garshana">Garshana</option>
                 <option value="Lepana">Lepana</option>
                 <option value="Swedana">Swedana</option>
@@ -247,7 +252,7 @@ const AddDoctor = () => {
             value={about}
             className="w-full px-4 pt-2 border rounded"
             rows={5}
-            placeholder="write about doctor"
+            placeholder="Write about doctor"
           ></textarea>
         </div>
 

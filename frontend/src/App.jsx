@@ -48,8 +48,6 @@ const App = () => {
         <Route path="/health-assessment" element={<MentalHealthAssessment />} />
         <Route path="/health-education" element={<HealthEducation />} />
         <Route path="/nutrition-check" element={<NutritionCheck />} />
-        {/* <Route path="/ayur-therapies" element={<AyurTherapies />} />
-        <Route path="/therapie" element={<Therapie />} /> */}
       </Routes>
       <Chatbot />
       <Footer />

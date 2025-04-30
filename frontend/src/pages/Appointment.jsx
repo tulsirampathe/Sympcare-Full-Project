@@ -18,16 +18,15 @@ const Appointment = () => {
   const [docSlots, setDocSlots] = useState([]);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [slotTime, setSlotTime] = useState("");
+  const [consultationMode, setConsultationMode] = useState("offline");
 
   const navigate = useNavigate();
 
-  // Fetch doctor details
   const fetchDocInfo = () => {
     const docInfo = doctors.find((doc) => doc._id === docId);
     setDocInfo(docInfo);
   };
 
-  // Get available slots for the selected date
   const getAvailableSlots = async (date) => {
     setDocSlots([]);
 
@@ -35,12 +34,10 @@ const Appointment = () => {
 
     let currentDate = new Date(date);
     currentDate.setHours(10, 0, 0, 0);
-
     let endTime = new Date(date);
     endTime.setHours(21, 0, 0, 0);
 
     let timeSlots = [];
-
     while (currentDate < endTime) {
       let formattedTime = currentDate.toLocaleTimeString([], {
         hour: "2-digit",
@@ -50,8 +47,8 @@ const Appointment = () => {
       let day = currentDate.getDate();
       let month = currentDate.getMonth() + 1;
       let year = currentDate.getFullYear();
-
       const slotDate = `${day}_${month}_${year}`;
+
       const isSlotAvailable =
         !docInfo.slots_booked[slotDate] ||
         !docInfo.slots_booked[slotDate].includes(formattedTime);
@@ -69,44 +66,6 @@ const Appointment = () => {
     setDocSlots(timeSlots);
   };
 
-  // Book appointment
-  // const bookAppointment = async () => {
-  //   if (!token) {
-  //     toast.warning("Login to book an appointment");
-  //     return navigate("/login");
-  //   }
-
-  //   if (!slotTime) {
-  //     toast.warning("Please select a time slot");
-  //     return;
-  //   }
-
-  //   let day = selectedDate.getDate();
-  //   let month = selectedDate.getMonth() + 1;
-  //   let year = selectedDate.getFullYear();
-  //   const slotDate = `${day}_${month}_${year}`;
-
-  //   try {
-  //     const { data } = await axios.post(
-  //       `${backendUrl}/api/user/book-appointment`,
-  //       { docId, slotDate, slotTime },
-  //       { headers: { token } }
-  //     );
-  //     if (data.success) {
-  //       console.log("appointment: ", data);
-
-  //       toast.success(data.message);
-  //       getDoctosData();
-  //       navigate("/my-appointments");
-  //     } else {
-  //       toast.error(data.message);
-  //     }
-  //   } catch (error) {
-  //     toast.error(error.message);
-  //   }
-  // };
-
-  // Book appointment
   const bookAppointment = async () => {
     if (!token) {
       toast.warning("Login to book an appointment");
@@ -126,17 +85,15 @@ const Appointment = () => {
     try {
       const { data } = await axios.post(
         `${backendUrl}/api/user/book-appointment`,
-        { docId, slotDate, slotTime },
+        { docId, slotDate, slotTime, consultationMode },
         { headers: { token } }
       );
 
       if (data.success) {
-        console.log("appointment: ", data);
         toast.success(data.message);
         getDoctosData();
         navigate("/my-appointments");
 
-        // 📲 SEND WHATSAPP MESSAGE
         const appointment = data.appointmentData;
         const doctor = appointment.docData;
         const user = appointment.userData;
@@ -150,16 +107,23 @@ Your appointment with *Dr. ${doctor.name}* has been successfully booked.
 
 📅 *Date:* ${formattedDate}
 🕒 *Time:* ${appointment.slotTime}
-📍 *Location:* ${doctor.address.line1}, ${doctor.address.line2}
+📍 *Mode:* ${
+          appointment.consultationMode === "online"
+            ? "Online Video Consultation"
+            : "In-Clinic Visit"
+        }
+${
+  appointment.consultationMode === "offline"
+    ? `📌 *Clinic Address:* ${doctor.address.line1}, ${doctor.address.line2}`
+    : ""
+}
 
 💰 *Fees:* ₹${appointment.amount}
 ⚠️ *Note:* Your payment is pending. Please complete it to confirm your appointment.
 
 Stay healthy,
-Team *SympCare*
-`;
+Team *SympCare*`;
 
-        // Send WhatsApp message
         await axios.post("http://localhost:4000/api/whatsapp/send-message", {
           type: "appointment",
           number: user.phone,
@@ -174,20 +138,16 @@ Team *SympCare*
   };
 
   useEffect(() => {
-    if (doctors.length > 0) {
-      fetchDocInfo();
-    }
+    if (doctors.length > 0) fetchDocInfo();
   }, [doctors, docId]);
 
   useEffect(() => {
-    if (docInfo) {
-      getAvailableSlots(selectedDate);
-    }
+    if (docInfo) getAvailableSlots(selectedDate);
   }, [docInfo, selectedDate]);
 
   return docInfo ? (
     <div className="space-y-8">
-      {/* Doctor Details */}
+      {/* Doctor Info */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div>
           <img
@@ -198,7 +158,6 @@ Team *SympCare*
         </div>
 
         <div className="flex-1 border border-[#ADADAD] rounded-lg p-8 py-7 bg-white mx-2 sm:mx-0 mt-[-80px] sm:mt-0">
-          {/* ----- Doc Info ----- */}
           <p className="flex items-center gap-2 text-3xl font-medium text-gray-700">
             {docInfo.name}{" "}
             <img className="w-5" src={assets.verified_icon} alt="" />
@@ -211,8 +170,6 @@ Team *SympCare*
               {docInfo.experience}
             </button>
           </div>
-
-          {/* ----- Doc About ----- */}
           <div>
             <p className="flex items-center gap-1 text-sm font-medium text-[#262626] mt-3">
               About <img className="w-3" src={assets.info_icon} alt="" />
@@ -221,7 +178,6 @@ Team *SympCare*
               {docInfo.about}
             </p>
           </div>
-
           <p className="text-gray-600 font-medium mt-4">
             Appointment fee:{" "}
             <span className="text-gray-800">
@@ -232,14 +188,13 @@ Team *SympCare*
         </div>
       </div>
 
-      {/* Booking Slots Section */}
+      {/* Calendar + Slots */}
       <div className="p-6 bg-white shadow-2xl rounded-lg border border-gray-200">
         <h2 className="text-gray-800 text-2xl font-bold flex items-center gap-2">
           <FaCalendarAlt className="text-blue-500" /> Select Date & Time
         </h2>
 
         <div className="flex flex-col md:flex-row gap-6 mt-6">
-          {/* Left Side: Full Calendar */}
           <div className="md:w-1/2">
             <p className="text-gray-600 mb-2 font-medium">Select a date:</p>
             <Calendar
@@ -250,7 +205,6 @@ Team *SympCare*
             />
           </div>
 
-          {/* Right Side: Time Slot Grid */}
           <div className="md:w-1/2">
             <p className="text-gray-600 mb-2 font-medium">
               Select a time slot:
@@ -281,18 +235,48 @@ Team *SympCare*
           </div>
         </div>
 
-        {/* Booking Button */}
-        <div className="mt-8 flex justify-center">
-          <button
-            onClick={bookAppointment}
-            className="bg-blue-600 text-white font-semibold px-10 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300"
-          >
-            Book Appointment
-          </button>
+        {/* Consultation Mode Selection */}
+        <div className="mt-8">
+          <p className="text-gray-700 font-semibold mb-2 text-center text-lg">
+            Choose Consultation Mode:
+          </p>
+          <div className="flex justify-center gap-6 mb-6">
+            <label className="flex items-center gap-2 text-gray-600 font-medium">
+              <input
+                type="radio"
+                name="mode"
+                value="online"
+                checked={consultationMode === "online"}
+                onChange={(e) => setConsultationMode(e.target.value)}
+                className="accent-blue-600"
+              />
+              Online
+            </label>
+            <label className="flex items-center gap-2 text-gray-600 font-medium">
+              <input
+                type="radio"
+                name="mode"
+                value="offline"
+                checked={consultationMode === "offline"}
+                onChange={(e) => setConsultationMode(e.target.value)}
+                className="accent-blue-600"
+              />
+              Offline (In-clinic)
+            </label>
+          </div>
+
+          {/* Booking Button */}
+          <div className="flex justify-center">
+            <button
+              onClick={bookAppointment}
+              className="bg-blue-600 text-white font-semibold px-10 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300"
+            >
+              Book Appointment
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Related Doctors */}
       <RelatedDoctors speciality={docInfo.speciality} docId={docId} />
     </div>
   ) : null;

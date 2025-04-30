@@ -6,7 +6,8 @@ import connectCloudinary from "./config/cloudinary.js";
 import userRouter from "./routes/userRoute.js";
 import doctorRouter from "./routes/doctorRoute.js";
 import adminRouter from "./routes/adminRoute.js";
-import whatsappRoutes from "./routes/whatsappRoutes.js"; // Import WhatsApp routes
+import whatsappRoutes from "./routes/whatsappRoutes.js";
+import zoomRoutes from "./routes/zoomRoutes.js"
 
 import { initializeWhatsApp } from "./whatsappClient.js";
 
@@ -33,6 +34,8 @@ app.use("/api/doctor", doctorRouter);
 
 // Add the WhatsApp reminder route
 app.use("/api/whatsapp", whatsappRoutes);
+
+app.use("/api/zoom", zoomRoutes);
 
 // Default route
 app.get("/", (req, res) => {

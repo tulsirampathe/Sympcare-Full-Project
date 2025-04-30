@@ -6,7 +6,7 @@ import { FaStethoscope } from "react-icons/fa";
 
 const SpecialityMenu = () => {
   return (
-    <section className="px-6 md:px-12 lg:px-24 py-20 ">
+    <section className="px-6 md:px-12 lg:px-24 py-20 " id="speciality">
       {/* Header Section */}
       <motion.div
         className="text-center mb-16"

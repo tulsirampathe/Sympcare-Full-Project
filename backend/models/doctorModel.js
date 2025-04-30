@@ -13,6 +13,7 @@ const doctorSchema = new mongoose.Schema({
     fees: { type: Number, required: true },
     slots_booked: { type: Object, default: {} },
     address: { type: Object, required: true },
+    phone: { type: String, default: '000000000' },
     date: { type: Number, required: true },
 }, { minimize: false })
 

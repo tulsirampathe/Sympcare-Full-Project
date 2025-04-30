@@ -73,12 +73,6 @@ const Contact = () => {
                   <p>Email: <span className="font-semibold">sympcare@gmail.com</span></p>
                 </>
               )
-            },
-            {
-              icon: <FaBriefcase className="text-2xl text-white" />,
-              color: "bg-purple-500",
-              title: "Careers at SympCare",
-              content: "Learn more about our teams and job openings."
             }
           ].map((item, index) => (
             <motion.div
