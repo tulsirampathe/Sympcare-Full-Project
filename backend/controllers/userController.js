@@ -7,6 +7,8 @@ import appointmentModel from "../models/appointmentModel.js";
 import { v2 as cloudinary } from "cloudinary";
 import stripe from "stripe";
 import razorpay from "razorpay";
+import axios from "axios";
+import { google } from "googleapis";
 
 // Gateway Initialize
 const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
@@ -14,6 +16,66 @@ const razorpayInstance = new razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+
+// Controller: Login/Register with Google
+const loginWithGoogleUser = async (req, res) => {
+  const { code } = req.body;
+
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    "postmessage"
+  );
+
+  try {
+    // 1. Exchange code for tokens
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    // 2. Get user info from Google
+    const response = await axios.get(
+      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`
+    );
+    const { email, name, picture } = response.data;
+
+    // 3. Validate email
+    if (!validator.isEmail(email)) {
+      return res.json({ success: false, message: "Invalid Google email" });
+    }
+
+    // 4. Check if user exists
+    let user = await userModel.findOne({ email });
+
+    if (!user) {
+      // Register new user from Google
+      user = await userModel.create({
+        name,
+        email,
+        password: null, // or mark as Google user
+        picture,
+        isGoogleLogin: true,
+      });
+    } else if (!user.isGoogleLogin) {
+      // Enable Google login for existing user
+      user.isGoogleLogin = true;
+      user.picture = picture;
+      await user.save();
+    }
+
+    // 5. Generate token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
+
+    // 6. Send token in response
+    res.json({
+      success: true,
+      token,
+      message: "Logged in via Google successfully",
+    });
+  } catch (error) {
+    console.error("Google Login Error:", error.message);
+    res.json({ success: false, message: "Google login failed" });
+  }
+};
 
 // API to register user
 const registerUser = async (req, res) => {
@@ -393,6 +455,7 @@ const verifyStripe = async (req, res) => {
 };
 
 export {
+  loginWithGoogleUser,
   loginUser,
   registerUser,
   getProfile,
