@@ -45,7 +45,7 @@ const NutritionCheck = () => {
   // Fetching deficiency information based on symptoms
   const fetchDeficiencyInfo = async (symptomsText) => {
     setLoadingRemedies(true);
-    const prompt = `You are an expert nutritionist. Based on the following symptoms, list the most likely nutrient deficiencies. Include details about the deficiency and suggest specific herbs or foods that will help reduce these deficiencies.
+    const prompt = `You are an expert nutritionist. Based on the following symptoms, list the most likely nutrient deficiencies. Include details about the deficiency and suggest specific herbs or foods that will help reduce these deficiencies 3-3 foods or herbs for each deficiency which comes in result.
     
     Symptoms: ${symptomsText}
     

@@ -14,8 +14,77 @@ const categoryIcons = {
 
 // Mapping Symptoms -> Remedies
 const symptomData = [
-  {
-    symptom: "Cough & Cold",
+  
+    {
+      symptom: "Skin Issues (Acne, Dryness, Eczema)",
+      remedies: [
+        {
+          title: "Neem for Detox & Skin Clarity 🍃",
+          description: "Purifies blood, combats acne, and reduces inflammation.",
+          use: "Use neem powder in face packs or drink neem water.",
+          keyword: "Neem leaves",
+        },
+        {
+          title: "Turmeric (Haldi) for Anti-Inflammation 🌼",
+          description: "Curcumin in turmeric reduces skin redness and soothes eczema.",
+          use: "Mix with milk or apply paste externally.",
+          keyword: "Turmeric root",
+        },
+        {
+          title: "Aloe Vera for Hydration & Healing 🌱",
+          description: "Soothes irritated skin and boosts collagen.",
+          use: "Apply fresh gel directly or drink aloe juice.",
+          keyword: "Aloe vera gel",
+        },
+      ],
+    },
+    {
+      symptom: "Joint Pain & Inflammation",
+      remedies: [
+        {
+          title: "Guggul for Joint Relief 🦴",
+          description: "Reduces joint pain and stiffness due to arthritis.",
+          use: "Available as tablets or powders with warm water.",
+          keyword: "Guggul resin",
+        },
+        {
+          title: "Castor Oil for Lubrication & Cleansing 🌿",
+          description: "Acts as a natural laxative and anti-inflammatory agent.",
+          use: "Massage on joints or consume with warm milk (under guidance).",
+          keyword: "Castor oil",
+        },
+        {
+          title: "Fenugreek Seeds (Methi) 🌾",
+          description: "Reduces pain and swelling in joints.",
+          use: "Soak overnight and eat or drink water in the morning.",
+          keyword: "Fenugreek seeds",
+        },
+      ],
+    },
+    {
+      symptom: "Sleep Disorders",
+      remedies: [
+        {
+          title: "Tagara (Indian Valerian) 🌙",
+          description: "Helps regulate sleep cycles and calm the mind.",
+          use: "Take as capsule or powder before bedtime.",
+          keyword: "Tagara root",
+        },
+        {
+          title: "Nutmeg (Jaiphal) for Sleep Induction 😴",
+          description: "Calms the nervous system and promotes restful sleep.",
+          use: "Add a pinch to warm milk before sleeping.",
+          keyword: "Nutmeg powder",
+        },
+        {
+          title: "Chamomile for Relaxation ☕",
+          description: "Reduces anxiety and improves sleep quality.",
+          use: "Drink as tea before bed.",
+          keyword: "Chamomile flower",
+        },
+      ],
+    },
+    { symptom: "Cough & Cold",
     remedies: [
       {
         title: "Tulsi for Immunity & Lung Health 🌬️",
