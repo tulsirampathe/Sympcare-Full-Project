@@ -4,6 +4,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
+import { IoMdChatbubbles } from "react-icons/io";
+import ChatWithDoctor from "../components/ChatWithDoctor";
 
 const MyAppointments = () => {
   const { backendUrl, token, userData } = useContext(AppContext);
@@ -11,6 +13,10 @@ const MyAppointments = () => {
 
   const [appointments, setAppointments] = useState([]);
   const [payment, setPayment] = useState("");
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([]);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [newMessage, setNewMessage] = useState("");
 
   const months = [
     "Jan",
@@ -63,9 +69,8 @@ const MyAppointments = () => {
     }
   };
 
+  // 📍 Razorpay Payment Flow
   const initPay = (order, appointmentData) => {
-    console.log("order: ", order);
-
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
       amount: order.amount,
@@ -74,44 +79,6 @@ const MyAppointments = () => {
       description: "Appointment Payment",
       order_id: order.id,
       receipt: order.receipt,
-      //       handler: async (response) => {
-      //         try {
-      //           const { data } = await axios.post(
-      //             backendUrl + "/api/user/verifyRazorpay",
-      //             response,
-      //             { headers: { token } }
-      //           );
-
-      //           if (data.success) {
-      //             const message = `✅ *Payment Successful - SympCare*
-
-      // Hello ${userData.name},
-
-      // We have received your payment of ₹${order.amount / 100} for your appointment.
-
-      // 🧾 *Payment ID:* ${response.razorpay_payment_id}
-      // 📄 *Order ID:* ${response.razorpay_order_id}
-
-      // Your appointment is now confirmed.
-
-      // Thank you for choosing *SympCare* 💚
-      // Stay healthy and happy!`;
-
-      //             await axios.post("http://localhost:4000/api/whatsapp/send-message", {
-      //               type: "payment",
-      //               number: userData.phone,
-      //               message,
-      //             });
-
-      //             navigate("/my-appointments");
-      //             getUserAppointments();
-      //           }
-      //         } catch (error) {
-      //           console.log(error);
-      //           toast.error(error.message);
-      //         }
-      //       },
-
       handler: async (response) => {
         try {
           const { data } = await axios.post(
@@ -169,14 +136,11 @@ Your appointment is now confirmed.
 Thank you for choosing *SympCare* 💚`;
             }
 
-            await axios.post(
-              "http://localhost:4000/api/whatsapp/send-message",
-              {
-                type: "payment",
-                number: userData.phone,
-                message,
-              }
-            );
+            await axios.post(backendUrl + "/api/whatsapp/send-message", {
+              type: "payment",
+              number: userData.phone,
+              message,
+            });
 
             navigate("/my-appointments");
             getUserAppointments();
@@ -200,8 +164,6 @@ Thank you for choosing *SympCare* 💚`;
         { headers: { token } }
       );
 
-      console.log("razor: ", data);
-
       if (data.success) {
         initPay(data.order, appointmentData);
       } else {
@@ -212,7 +174,8 @@ Thank you for choosing *SympCare* 💚`;
       toast.error(error.message);
     }
   };
-  
+
+  // 📍 Stripe Payment Flow
   const appointmentStripe = async (appointmentId) => {
     try {
       const { data } = await axios.post(
@@ -232,15 +195,55 @@ Thank you for choosing *SympCare* 💚`;
     }
   };
 
+  // 💬 Chat Feature
+  const openChat = async (appointment) => {
+    setSelectedAppointment(appointment);
+    setChatOpen(true);
+    try {
+      const { data } = await axios.get(
+        `${backendUrl}/api/chat/${appointment._id}`,
+        { headers: { token } }
+      );
+      setChatMessages(data.messages || []);
+    } catch (err) {
+      console.log(err);
+      toast.error("Failed to load chat");
+    }
+  };
+
+  const sendMessage = async () => {
+    if (!newMessage.trim()) return;
+    try {
+      const { data } = await axios.post(
+        `${backendUrl}/api/chat/send`,
+        {
+          appointmentId: selectedAppointment._id,
+          senderId: userData._id,
+          receiverId: selectedAppointment.docData._id,
+          message: newMessage,
+        },
+        { headers: { token } }
+      );
+
+      setChatMessages((prev) => [...prev, data.message]);
+      setNewMessage("");
+    } catch (error) {
+      console.log(error);
+      toast.error("Failed to send message");
+    }
+  };
+
   useEffect(() => {
     if (token) getUserAppointments();
   }, [token]);
 
   return (
-    <div>
+    <div className="relative">
       <p className="pb-3 mt-12 text-lg font-medium text-gray-600 border-b">
-        My appointments
+        My Appointments
       </p>
+
+      {/* Appointment List */}
       <div>
         {appointments.map((item, index) => (
           <div
@@ -295,16 +298,15 @@ Thank you for choosing *SympCare* 💚`;
             </div>
 
             <div className="flex flex-col gap-2 justify-end text-sm text-center">
-              {/* ❗ Info Message for Online Unpaid */}
-              {item.consultationMode === "online" &&
-                !item.payment &&
-                !item.cancelled &&
-                !item.isCompleted && (
-                  <div className="bg-yellow-100 text-yellow-800 text-xs p-2 rounded mb-2 border border-yellow-300">
-                    💡 This is an <b>online consultation</b>. You must complete
-                    the payment to receive the Zoom meeting link on WhatsApp.
-                  </div>
-                )}
+              {/* Chat button */}
+              {item.payment && !item.cancelled && !item.isCompleted && (
+                <button
+                  onClick={() => openChat(item)}
+                  className="flex items-center justify-center gap-2 border rounded py-2 hover:bg-primary hover:text-white transition-all duration-300"
+                >
+                  <IoMdChatbubbles /> Chat with Doctor
+                </button>
+              )}
 
               {/* Payment Buttons */}
               {!item.cancelled &&
@@ -318,36 +320,34 @@ Thank you for choosing *SympCare* 💚`;
                     Pay Online
                   </button>
                 )}
-              {!item.cancelled &&
-                !item.payment &&
-                !item.isCompleted &&
-                payment === item._id && (
-                  <button
-                    onClick={() => appointmentRazorpay(item._id, item)}
-                    className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-gray-100 hover:text-white transition-all duration-300 flex items-center justify-center"
-                  >
-                    <img
-                      className="max-w-20 max-h-5"
-                      src={assets.razorpay_logo}
-                      alt="pay"
-                    />
-                  </button>
-                )}
 
               {!item.cancelled &&
                 !item.payment &&
                 !item.isCompleted &&
                 payment === item._id && (
-                  <button
-                    onClick={() => appointmentStripe(item._id, item)}
-                    className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-gray-100 hover:text-white transition-all duration-300 flex items-center justify-center"
-                  >
-                    <img
-                      className="max-w-20 max-h-5"
-                      src={assets.stripe_logo}
-                      alt=""
-                    />
-                  </button>
+                  <>
+                    <button
+                      onClick={() => appointmentRazorpay(item._id, item)}
+                      className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-gray-100 transition-all duration-300 flex items-center justify-center"
+                    >
+                      <img
+                        className="max-w-20 max-h-5"
+                        src={assets.razorpay_logo}
+                        alt="Razorpay"
+                      />
+                    </button>
+
+                    <button
+                      onClick={() => appointmentStripe(item._id, item)}
+                      className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-gray-100 transition-all duration-300 flex items-center justify-center"
+                    >
+                      <img
+                        className="max-w-20 max-h-5"
+                        src={assets.stripe_logo}
+                        alt="Stripe"
+                      />
+                    </button>
+                  </>
                 )}
 
               {/* Payment completed */}
@@ -382,6 +382,11 @@ Thank you for choosing *SympCare* 💚`;
           </div>
         ))}
       </div>
+
+      {/* 💬 Chat Modal */}
+      {chatOpen && (
+        <ChatWithDoctor appointment={selectedAppointment} isOpen={true} setChatOpen={setChatOpen} />
+      )}
     </div>
   );
 };
