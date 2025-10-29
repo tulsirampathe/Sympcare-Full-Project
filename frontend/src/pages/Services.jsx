@@ -53,7 +53,7 @@ const Services = () => {
   };
 
   return (
-    <section className="px-6 py-20" id="services">
+    <section className="px-6" id="services">
       {/* Main Services Section */}
       <motion.div
         className="text-center mb-16"

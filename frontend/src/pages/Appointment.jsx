@@ -1,5 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import { assets } from "../assets/assets";
 import RelatedDoctors from "../components/RelatedDoctors";
@@ -11,8 +11,14 @@ import { FaCalendarAlt } from "react-icons/fa";
 
 const Appointment = () => {
   const { docId } = useParams();
-  const { doctors, currencySymbol, backendUrl, token, getDoctosData } =
-    useContext(AppContext);
+  const {
+    doctors,
+    currencySymbol,
+    backendUrl,
+    token,
+    getDoctosData,
+    userData,
+  } = useContext(AppContext);
 
   const [docInfo, setDocInfo] = useState(null);
   const [docSlots, setDocSlots] = useState([]);
@@ -66,6 +72,12 @@ const Appointment = () => {
     setDocSlots(timeSlots);
   };
 
+  const isValidPhoneNumber = (number) => {
+    if (!/^[0-9]{10}$/.test(number)) return false;
+    if (/^(\d)\1{9}$/.test(number)) return false;
+    return true;
+  };
+
   const bookAppointment = async () => {
     if (!token) {
       toast.warning("Login to book an appointment");
@@ -74,6 +86,24 @@ const Appointment = () => {
 
     if (!slotTime) {
       toast.warning("Please select a time slot");
+      return;
+    }
+
+    if (!userData || !isValidPhoneNumber(userData.phone)) {
+      toast.error(
+        <div>
+          Your phone number seems invalid.
+          <br />
+          <Link
+            to="/my-profile"
+            className="text-blue-500 underline hover:text-blue-700"
+          >
+            Go to Profile
+          </Link>{" "}
+          to update it.
+        </div>,
+        { autoClose: 6000 } // optional: closes after 6s
+      );
       return;
     }
 
