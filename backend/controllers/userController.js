@@ -9,6 +9,7 @@ import stripe from "stripe";
 import razorpay from "razorpay";
 import axios from "axios";
 import { google } from "googleapis";
+import chatMessageModel from "../models/chatMessageModel.js";
 
 // Gateway Initialize
 const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
@@ -241,6 +242,16 @@ const bookAppointment = async (req, res) => {
 
     // save new slots data in docData
     await doctorModel.findByIdAndUpdate(docId, { slots_booked });
+
+     // 🟢 Send initial message to the doctor
+    const initialMessage = `Hello Dr. ${docData.name}, I’m ${userData.name}. I have booked an appointment on ${slotDate} at ${slotTime}. Looking forward to the consultation.`;
+
+    await chatMessageModel.create({
+      appointmentId: newAppointment._id,
+      senderId: userId,       // patient sending
+      receiverId: docId,      // doctor receiving
+      message: initialMessage,
+    });
 
     res.json({ success: true, message: "Appointment Booked", appointmentData });
   } catch (error) {
