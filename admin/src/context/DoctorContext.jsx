@@ -1,4 +1,4 @@
-import { createContext, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from 'axios'
 import { toast } from 'react-toastify'
 
@@ -133,6 +133,10 @@ const DoctorContextProvider = (props) => {
             console.log(error);
         }
     };
+
+    useEffect(() => {
+        getProfileData()
+    }, [])
 
     const value = {
         dToken, setDToken, backendUrl,
