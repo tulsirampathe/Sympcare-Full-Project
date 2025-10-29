@@ -4,7 +4,7 @@ import { assets } from "../assets/assets";
 
 const About = () => {
   return (
-    <div className="px-6 md:px-12 lg:px-24">
+    <div className="px-6 md:px-12 lg:px-24 py-20 ">
       {/* Section Title */}
       <motion.div
         className="text-center mb-16"
