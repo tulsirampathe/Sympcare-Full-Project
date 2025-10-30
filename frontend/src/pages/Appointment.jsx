@@ -44,6 +44,8 @@ const Appointment = () => {
     endTime.setHours(21, 0, 0, 0);
 
     let timeSlots = [];
+    const now = new Date();
+
     while (currentDate < endTime) {
       let formattedTime = currentDate.toLocaleTimeString([], {
         hour: "2-digit",
@@ -59,7 +61,12 @@ const Appointment = () => {
         !docInfo.slots_booked[slotDate] ||
         !docInfo.slots_booked[slotDate].includes(formattedTime);
 
-      if (isSlotAvailable) {
+      // ✅ Only include future slots (if selected date is today)
+      const isFutureSlot =
+        date.toDateString() !== now.toDateString() ||
+        currentDate.getTime() > now.getTime();
+
+      if (isSlotAvailable && isFutureSlot) {
         timeSlots.push({
           datetime: new Date(currentDate),
           time: formattedTime,

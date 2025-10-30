@@ -187,7 +187,7 @@ const AyurvedicHealthEducation = () => {
   }, []);
 
   return (
-    <div className="px-6 md:px-12 lg:px-24 py-20 bg-gradient-to-b from-slate-50 to-white">
+    <div className="px-6 md:px-12 lg:px-24 py-20 ">
       {/* Header Section */}
       <motion.div
         className="text-center mb-16"
