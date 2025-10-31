@@ -2,6 +2,7 @@ import React, { useContext, useState, useEffect } from "react";
 import { assets } from "../assets/assets";
 import { NavLink, useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -40,7 +41,6 @@ const Navbar = () => {
       );
     };
   }, []);
-
 
   return (
     <div className="flex items-center justify-between text-sm py-4 mb-5 border-b border-b-[#ADADAD]">
@@ -126,49 +126,99 @@ const Navbar = () => {
         />
 
         {/* ---- Mobile Menu ---- */}
-        <div
-          className={`fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 transform transition-transform ${
-            showMenu ? "translate-x-0" : "translate-x-full"
-          }`}
-        >
-          <div className="flex items-center justify-end px-5 py-6">
-            <img
-              onClick={() => setShowMenu(false)}
-              src={assets.cross_icon}
-              className="w-7 cursor-pointer"
-              alt="Close"
-            />
-          </div>
+        <AnimatePresence>
+          {showMenu && (
+            <>
+              <motion.div
+                className="fixed inset-0 bg-black bg-opacity-40 z-40"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowMenu(false)}
+              />
+              <motion.div
+                className="fixed top-0 right-0 h-full w-64 bg-white shadow-lg z-50 flex flex-col justify-between"
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ duration: 0.3 }}
+              >
+                <div>
+                  <div className="flex items-center justify-between px-5 py-5 border-b">
+                    <img
+                      src={assets.logo}
+                      alt="Logo"
+                      className="w-32 cursor-pointer"
+                      onClick={() => {
+                        navigate("/");
+                        setShowMenu(false);
+                      }}
+                    />
+                    <img
+                      src={assets.cross_icon}
+                      alt="Close"
+                      className="w-7 cursor-pointer"
+                      onClick={() => setShowMenu(false)}
+                    />
+                  </div>
 
-          <ul className="flex flex-col items-center gap-2 mt-5 px-5 text-lg font-medium">
-            <NavLink onClick={() => setShowMenu(false)} to="/">
-              <p className="px-4 py-2">HOME</p>
-            </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/services">
-              <p className="px-4 py-2">SERVICES</p>
-            </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/doctors">
-              <p className="px-4 py-2">ALL-DOCTORS</p>
-            </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/ayur-therapies">
-              <li className="px-4 py-2">AYUR-THERAPIES</li>
-            </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/health-education">
-              <p className="px-4 py-2">HEALTH-EDUCATION</p>
-            </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/about">
-              <p className="px-4 py-2">ABOUT</p>
-            </NavLink>
-            <NavLink onClick={() => setShowMenu(false)} to="/contact">
-              <p className="px-4 py-2">CONTACT</p>
-            </NavLink>
+                  <ul className="flex flex-col gap-4 mt-6 px-5 font-medium text-gray-700">
+                    {[
+                      ["HOME", "/"],
+                      ["SERVICES", "/services"],
+                      ["ALL DOCTORS", "/doctors"],
+                      ["HEALTH EDUCATION", "/health-education"],
+                      ["ABOUT", "/about"],
+                      ["CONTACT", "/contact"],
+                    ].map(([label, path]) => (
+                      <NavLink
+                        key={label}
+                        to={path}
+                        onClick={() => setShowMenu(false)}
+                        className={({ isActive }) =>
+                          `block py-2 px-2 rounded-md hover:bg-blue-50 ${
+                            isActive ? "text-blue-600 font-semibold" : ""
+                          }`
+                        }
+                      >
+                        {label}
+                      </NavLink>
+                    ))}
+                  </ul>
+                </div>
 
-            <div
-          id="google_translate_element"
-          className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white shadow-sm hover:shadow-md transition duration-300"
-        ></div>
-          </ul>
-        </div>
+                <div className="p-5 border-t flex flex-col gap-3">
+                  <div
+                    id="google_translate_element"
+                    className="border border-gray-300 rounded-md px-2 py-1 text-sm bg-white shadow-sm"
+                  ></div>
+
+                  {token ? (
+                    <button
+                      onClick={() => {
+                        logout();
+                        setShowMenu(false);
+                      }}
+                      className="w-full bg-red-500 hover:bg-red-600 text-white py-2 rounded-full transition-all duration-300"
+                    >
+                      Logout
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        navigate("/login");
+                        setShowMenu(false);
+                      }}
+                      className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-full transition-all duration-300"
+                    >
+                      Create Account
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
