@@ -85,14 +85,14 @@ export const specialityData = [
     speciality: "Pediatricians",
     image: Pediatricians,
   },
-  {
-    speciality: "Neurologist",
-    image: Neurologist,
-  },
-  {
-    speciality: "Gastroenterologist",
-    image: Gastroenterologist,
-  },
+  // {
+  //   speciality: "Neurologist",
+  //   image: Neurologist,
+  // },
+  // {
+  //   speciality: "Gastroenterologist",
+  //   image: Gastroenterologist,
+  // },
 ];
 
 export const doctors = [

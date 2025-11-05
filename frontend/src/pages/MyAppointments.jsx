@@ -17,6 +17,7 @@ const MyAppointments = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [newMessage, setNewMessage] = useState("");
+  const [successfulPayments, setSuccessfulPayments] = useState(new Set()); // Track successful payments
 
   const months = [
     "Jan",
@@ -81,6 +82,10 @@ const MyAppointments = () => {
       receipt: order.receipt,
       handler: async (response) => {
         try {
+          // Show immediate success feedback
+          setSuccessfulPayments(prev => new Set(prev).add(appointmentData._id));
+          toast.success("Payment successful! Confirming your appointment...");
+
           const { data } = await axios.post(
             backendUrl + "/api/user/verifyRazorpay",
             response,
@@ -142,14 +147,28 @@ Thank you for choosing *SympCare* 💚`;
               message,
             });
 
-            navigate("/my-appointments");
-            getUserAppointments();
+            // Refresh appointments and show final success message
+            await getUserAppointments();
+            toast.success("Appointment confirmed successfully! 🎉");
+            
           }
         } catch (error) {
           console.log(error);
-          toast.error(error.message);
+          // Remove from successful payments if verification failed
+          setSuccessfulPayments(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(appointmentData._id);
+            return newSet;
+          });
+          toast.error("Payment verification failed: " + error.message);
         }
       },
+      // Handle payment failure
+      modal: {
+        ondismiss: function() {
+          toast.info("Payment cancelled");
+        }
+      }
     };
 
     const rzp = new window.Razorpay(options);
@@ -176,21 +195,40 @@ Thank you for choosing *SympCare* 💚`;
   };
 
   // 📍 Stripe Payment Flow
-  const appointmentStripe = async (appointmentId) => {
+  const appointmentStripe = async (appointmentId, appointmentData) => {
     try {
+      // Show immediate success feedback for Stripe too
+      setSuccessfulPayments(prev => new Set(prev).add(appointmentData._id));
+      
       const { data } = await axios.post(
         backendUrl + "/api/user/payment-stripe",
         { appointmentId },
         { headers: { token } }
       );
       if (data.success) {
+        toast.success("Redirecting to payment...");
         const { session_url } = data;
         window.location.replace(session_url);
+        
+        // Note: For Stripe, we'll rely on webhooks or page refresh to update the UI
+        // since it redirects to Stripe and back
       } else {
+        // Remove from successful payments if failed
+        setSuccessfulPayments(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(appointmentData._id);
+          return newSet;
+        });
         toast.error(data.message);
       }
     } catch (error) {
       console.log(error);
+      // Remove from successful payments if error
+      setSuccessfulPayments(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(appointmentData._id);
+        return newSet;
+      });
       toast.error(error.message);
     }
   };
@@ -299,7 +337,7 @@ Thank you for choosing *SympCare* 💚`;
 
             <div className="flex flex-col gap-2 justify-end text-sm text-center">
               {/* Chat button */}
-              {item.payment && !item.cancelled && !item.isCompleted && (
+              {(item.payment || successfulPayments.has(item._id)) && !item.cancelled && !item.isCompleted && (
                 <button
                   onClick={() => openChat(item)}
                   className="flex items-center justify-center gap-2 border rounded py-2 hover:bg-primary hover:text-white transition-all duration-300"
@@ -308,11 +346,19 @@ Thank you for choosing *SympCare* 💚`;
                 </button>
               )}
 
-              {/* Payment Buttons */}
+              {/* Payment Success Message (immediate feedback) */}
+              {successfulPayments.has(item._id) && !item.cancelled && !item.isCompleted && (
+                <div className="sm:min-w-48 py-2 border rounded bg-green-50 border-green-200 text-green-700">
+                  ✅ Payment Successful
+                </div>
+              )}
+
+              {/* Payment Buttons - Only show if not paid and not in successful payments */}
               {!item.cancelled &&
                 !item.payment &&
                 !item.isCompleted &&
-                payment !== item._id && (
+                payment !== item._id &&
+                !successfulPayments.has(item._id) && (
                   <button
                     onClick={() => setPayment(item._id)}
                     className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300"
@@ -324,7 +370,8 @@ Thank you for choosing *SympCare* 💚`;
               {!item.cancelled &&
                 !item.payment &&
                 !item.isCompleted &&
-                payment === item._id && (
+                payment === item._id &&
+                !successfulPayments.has(item._id) && (
                   <>
                     <button
                       onClick={() => appointmentRazorpay(item._id, item)}
@@ -350,7 +397,7 @@ Thank you for choosing *SympCare* 💚`;
                   </>
                 )}
 
-              {/* Payment completed */}
+              {/* Payment completed (from backend data) */}
               {!item.cancelled && item.payment && !item.isCompleted && (
                 <button className="sm:min-w-48 py-2 border rounded text-[#696969] bg-[#EAEFFF]">
                   Paid
@@ -365,7 +412,7 @@ Thank you for choosing *SympCare* 💚`;
               )}
 
               {/* Cancel button */}
-              {!item.cancelled && !item.isCompleted && (
+              {!item.cancelled && !item.isCompleted && !successfulPayments.has(item._id) && (
                 <button
                   onClick={() => cancelAppointment(item._id)}
                   className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
