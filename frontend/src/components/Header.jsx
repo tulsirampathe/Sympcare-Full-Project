@@ -3,7 +3,7 @@ import { assets } from "../assets/assets";
 
 const Header = () => {
   return (
-    <div className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl px-6 sm:px-10 lg:px-16 py-8 md:py-10 my-6 mx-4 md:mx-5 overflow-hidden relative shadow-xl">
+    <div className="flex flex-col md:flex-row items-center justify-between bg-gradient-to-r from-blue-600 to-blue-700 rounded-3xl px-6 sm:px-10 lg:px-16 py-8 md:py-10 overflow-hidden relative shadow-xl">
       {/* Decorative Backgrounds */}
       <div className="absolute top-0 left-0 w-24 h-24 bg-white/10 rounded-full -translate-x-10 -translate-y-10"></div>
       <div className="absolute bottom-0 right-0 w-40 h-40 bg-white/5 rounded-full translate-x-16 translate-y-16"></div>
