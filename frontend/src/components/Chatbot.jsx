@@ -39,7 +39,6 @@ const Chatbot = () => {
     setIsOpen((prev) => !prev);
     setIsMaximized(false);
   };
-  
 
   const toggleMaximize = () => {
     setIsMaximized((prev) => !prev);
@@ -138,32 +137,30 @@ const Chatbot = () => {
   const speakResponse = (text) => {
     const synth = window.speechSynthesis;
     synth.cancel();
-  
+
     const utterance = new SpeechSynthesisUtterance(text);
     const isHindi = /[\u0900-\u097F]/.test(text);
-  
+
     // Try to pick an Indian English or Hindi female voice
     const preferredVoice = voices.find(
       (voice) =>
         (voice.lang === "hi-IN" || voice.lang === "en-IN") &&
         voice.name.toLowerCase().includes("female")
     );
-  
+
     // Fallback to any Indian voice
     const fallbackVoice = voices.find(
-      (voice) =>
-        (voice.lang === "hi-IN" || voice.lang === "en-IN")
+      (voice) => voice.lang === "hi-IN" || voice.lang === "en-IN"
     );
-  
+
     utterance.voice = preferredVoice || fallbackVoice || null;
-  
+
     if (utterance.voice) {
       synth.speak(utterance);
     } else {
       console.warn("No suitable voice found.");
     }
   };
-  
 
   useEffect(() => {
     if (
@@ -177,10 +174,11 @@ const Chatbot = () => {
 
   return (
     <div
-      className={`${isMaximized
-        ? "fixed inset-0 flex justify-center items-center z-50"
-        : "fixed bottom-5 right-5 z-50"
-        }`}
+      className={`${
+        isMaximized
+          ? "fixed inset-0 flex justify-center items-center z-50"
+          : "fixed bottom-5 right-5 z-50"
+      }`}
     >
       {isOpen ? (
         <motion.div className="w-full max-w-lg h-[90vh] max-h-[600px] bg-white shadow-2xl rounded-2xl flex flex-col border border-gray-200">
@@ -201,24 +199,22 @@ const Chatbot = () => {
 
           {/* Messages */}
           <div className="p-4 h-full overflow-y-auto flex flex-col space-y-3 bg-gray-50">
-
-            {
-              messages.map((msg, index) => (
-                <motion.div
-                  key={index}
-                  className={`max-w-xs p-3 rounded-lg shadow-md whitespace-pre-wrap ${msg.sender === "bot"
+            {messages.map((msg, index) => (
+              <motion.div
+                key={index}
+                className={`max-w-xs p-3 rounded-lg shadow-md whitespace-pre-wrap ${
+                  msg.sender === "bot"
                     ? "bg-primary text-white self-start"
                     : "bg-blue-500 text-white self-end"
-                    }`}
-                >
-                  {msg.sender === "bot" ? (
-                    <ReactMarkdown>{msg.text}</ReactMarkdown>
-                  ) : (
-                    msg.text
-                  )}
-                </motion.div>
-              ))
-            }
+                }`}
+              >
+                {msg.sender === "bot" ? (
+                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                ) : (
+                  msg.text
+                )}
+              </motion.div>
+            ))}
 
             {isThinking && (
               <div className="self-start flex space-x-1 p-2">
@@ -254,17 +250,18 @@ const Chatbot = () => {
             />
 
             <button
+              onClick={toggleListening}
+              className={`ml-2 px-4 py-2 rounded-lg ${
+                isListening ? "bg-red-500" : "bg-primary"
+              } text-white`}
+            >
+              {isListening ? <FaMicrophoneSlash /> : <FaMicrophone />}
+            </button>
+            <button
               onClick={() => sendMessage(input)}
               className="bg-primary text-white px-4 py-2 rounded-lg"
             >
               <FaPaperPlane />
-            </button>
-            <button
-              onClick={toggleListening}
-              className={`ml-2 px-4 py-2 rounded-lg ${isListening ? "bg-red-500" : "bg-primary"
-                } text-white`}
-            >
-              {isListening ? <FaMicrophoneSlash /> : <FaMicrophone />}
             </button>
           </div>
         </motion.div>
