@@ -56,7 +56,7 @@ const Services = () => {
 
   return (
     <section
-      className="relative px-4 sm:px-6 py-10 sm:py-10 "
+      className="relative px-4 sm:px-6 py-10 sm:py-10 lg:py-20"
       id="services"
     >
       {/* Hero Header */}

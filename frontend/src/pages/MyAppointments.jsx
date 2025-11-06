@@ -6,6 +6,8 @@ import { assets } from "../assets/assets";
 import { AppContext } from "../context/AppContext";
 import { IoMdChatbubbles } from "react-icons/io";
 import ChatWithDoctor from "../components/ChatWithDoctor";
+import { motion } from "framer-motion";
+import { Calendar, Video, CheckCircle, AlertCircle } from "lucide-react";
 
 const MyAppointments = () => {
   const { backendUrl, token, userData } = useContext(AppContext);
@@ -17,7 +19,7 @@ const MyAppointments = () => {
   const [chatMessages, setChatMessages] = useState([]);
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [newMessage, setNewMessage] = useState("");
-  const [successfulPayments, setSuccessfulPayments] = useState(new Set()); // Track successful payments
+  const [successfulPayments, setSuccessfulPayments] = useState(new Set());
 
   const months = [
     "Jan",
@@ -37,6 +39,12 @@ const MyAppointments = () => {
   const slotDateFormat = (slotDate) => {
     const dateArray = slotDate.split("_");
     return `${dateArray[0]} ${months[Number(dateArray[1])]} ${dateArray[2]}`;
+  };
+
+  // Add this helper function to parse the date for comparison
+  const parseSlotDate = (slotDate) => {
+    const [day, month, year] = slotDate.split("_").map(Number);
+    return new Date(year, month - 1, day); // month is 0-indexed in JavaScript Date
   };
 
   const getUserAppointments = async () => {
@@ -61,16 +69,14 @@ const MyAppointments = () => {
       if (data.success) {
         toast.success(data.message);
         getUserAppointments();
-      } else {
-        toast.error(data.message);
-      }
+      } else toast.error(data.message);
     } catch (error) {
       console.log(error);
       toast.error(error.message);
     }
   };
 
-  // 📍 Razorpay Payment Flow
+  // 💳 Razorpay
   const initPay = (order, appointmentData) => {
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -82,8 +88,9 @@ const MyAppointments = () => {
       receipt: order.receipt,
       handler: async (response) => {
         try {
-          // Show immediate success feedback
-          setSuccessfulPayments(prev => new Set(prev).add(appointmentData._id));
+          setSuccessfulPayments((prev) =>
+            new Set(prev).add(appointmentData._id)
+          );
           toast.success("Payment successful! Confirming your appointment...");
 
           const { data } = await axios.post(
@@ -95,7 +102,6 @@ const MyAppointments = () => {
           if (data.success) {
             let message = "";
 
-            // If online, create Zoom meeting
             if (appointmentData?.consultationMode === "online") {
               const zoomRes = await axios.post(
                 backendUrl + "/api/zoom/create",
@@ -105,12 +111,10 @@ const MyAppointments = () => {
 
               const zoomLink = zoomRes.data.zoomJoinUrl;
               const doc = appointmentData.docData;
-
               const appointmentDate = slotDateFormat(appointmentData.slotDate);
               const appointmentTime = appointmentData.slotTime;
 
               message = `✅ *Appointment Confirmed - SympCare*
-            
 Hello ${userData.name},
 
 Your payment of ₹${order.amount / 100} was successful.
@@ -147,15 +151,12 @@ Thank you for choosing *SympCare* 💚`;
               message,
             });
 
-            // Refresh appointments and show final success message
             await getUserAppointments();
             toast.success("Appointment confirmed successfully! 🎉");
-            
           }
         } catch (error) {
           console.log(error);
-          // Remove from successful payments if verification failed
-          setSuccessfulPayments(prev => {
+          setSuccessfulPayments((prev) => {
             const newSet = new Set(prev);
             newSet.delete(appointmentData._id);
             return newSet;
@@ -163,12 +164,11 @@ Thank you for choosing *SympCare* 💚`;
           toast.error("Payment verification failed: " + error.message);
         }
       },
-      // Handle payment failure
       modal: {
-        ondismiss: function() {
+        ondismiss: function () {
           toast.info("Payment cancelled");
-        }
-      }
+        },
+      },
     };
 
     const rzp = new window.Razorpay(options);
@@ -182,24 +182,17 @@ Thank you for choosing *SympCare* 💚`;
         { appointmentId },
         { headers: { token } }
       );
-
-      if (data.success) {
-        initPay(data.order, appointmentData);
-      } else {
-        toast.error(data.message);
-      }
+      if (data.success) initPay(data.order, appointmentData);
+      else toast.error(data.message);
     } catch (error) {
       console.log(error);
       toast.error(error.message);
     }
   };
 
-  // 📍 Stripe Payment Flow
   const appointmentStripe = async (appointmentId, appointmentData) => {
     try {
-      // Show immediate success feedback for Stripe too
-      setSuccessfulPayments(prev => new Set(prev).add(appointmentData._id));
-      
+      setSuccessfulPayments((prev) => new Set(prev).add(appointmentData._id));
       const { data } = await axios.post(
         backendUrl + "/api/user/payment-stripe",
         { appointmentId },
@@ -207,14 +200,9 @@ Thank you for choosing *SympCare* 💚`;
       );
       if (data.success) {
         toast.success("Redirecting to payment...");
-        const { session_url } = data;
-        window.location.replace(session_url);
-        
-        // Note: For Stripe, we'll rely on webhooks or page refresh to update the UI
-        // since it redirects to Stripe and back
+        window.location.replace(data.session_url);
       } else {
-        // Remove from successful payments if failed
-        setSuccessfulPayments(prev => {
+        setSuccessfulPayments((prev) => {
           const newSet = new Set(prev);
           newSet.delete(appointmentData._id);
           return newSet;
@@ -223,8 +211,7 @@ Thank you for choosing *SympCare* 💚`;
       }
     } catch (error) {
       console.log(error);
-      // Remove from successful payments if error
-      setSuccessfulPayments(prev => {
+      setSuccessfulPayments((prev) => {
         const newSet = new Set(prev);
         newSet.delete(appointmentData._id);
         return newSet;
@@ -249,26 +236,43 @@ Thank you for choosing *SympCare* 💚`;
     }
   };
 
-  const sendMessage = async () => {
-    if (!newMessage.trim()) return;
-    try {
-      const { data } = await axios.post(
-        `${backendUrl}/api/chat/send`,
-        {
-          appointmentId: selectedAppointment._id,
-          senderId: userData._id,
-          receiverId: selectedAppointment.docData._id,
-          message: newMessage,
-        },
-        { headers: { token } }
-      );
+  // Helper function to check if appointment is ongoing (within 30 minutes after slot time starts)
+  const isAppointmentOngoing = (slotDate, slotTime) => {
+    const [day, month, year] = slotDate.split("_").map(Number);
+    const [time, modifier] = slotTime.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
 
-      setChatMessages((prev) => [...prev, data.message]);
-      setNewMessage("");
-    } catch (error) {
-      console.log(error);
-      toast.error("Failed to send message");
-    }
+    // Convert to 24-hour format
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    const appointmentDateTime = new Date(year, month - 1, day, hours, minutes);
+    const now = new Date();
+
+    // Check if current time is within 30 minutes AFTER appointment start time
+    const thirtyMinutes = 30 * 60 * 1000; // 30 minutes in milliseconds
+    const timeDifference = now - appointmentDateTime;
+
+    return timeDifference >= 0 && timeDifference <= thirtyMinutes;
+  };
+  // Helper function to check if appointment is upcoming today
+  const isAppointmentUpcomingToday = (slotDate, slotTime) => {
+    const [day, month, year] = slotDate.split("_").map(Number);
+    const [time, modifier] = slotTime.split(" ");
+    let [hours, minutes] = time.split(":").map(Number);
+
+    // Convert to 24-hour format
+    if (modifier === "PM" && hours !== 12) hours += 12;
+    if (modifier === "AM" && hours === 12) hours = 0;
+
+    const appointmentDateTime = new Date(year, month - 1, day, hours, minutes);
+    const now = new Date();
+
+    // Check if it's today and appointment time is in the future
+    return (
+      appointmentDateTime.toDateString() === now.toDateString() &&
+      appointmentDateTime > now
+    );
   };
 
   useEffect(() => {
@@ -276,163 +280,323 @@ Thank you for choosing *SympCare* 💚`;
   }, [token]);
 
   return (
-    <div className="relative">
-      <p className="pb-3 mt-12 text-lg font-medium text-gray-600 border-b">
-        My Appointments
-      </p>
+    <div className="p-5 max-w-6xl mx-auto">
+      <motion.div
+        className="text-center mb-8"
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8 }}
+      >
+        <div className="inline-flex items-center mb-4 space-x-3">
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+          <h3 className="text-lg font-semibold text-primary">
+            My Appointments
+          </h3>
+          <div className="w-12 h-1 bg-primary rounded-full"></div>
+        </div>
+        <h2 className="text-4xl font-bold text-gray-900 mb-4">
+          Appointment <span className="text-primary">Overview</span>
+        </h2>
+        <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+          Manage your upcoming consultations and view past appointment details
+        </p>
+      </motion.div>
 
-      {/* Appointment List */}
-      <div>
+      {/* Payment Alert Banner */}
+      {appointments.some(
+        (item) =>
+          item.consultationMode === "online" &&
+          !item.payment &&
+          !item.cancelled &&
+          !item.isCompleted &&
+          !successfulPayments.has(item._id) &&
+          parseSlotDate(item.slotDate) >= new Date() // Only show alert for future appointments
+      ) && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3"
+        >
+          <div className="flex-shrink-0 w-6 h-6 bg-amber-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm">!</span>
+          </div>
+          <div>
+            <p className="text-amber-800 font-medium">
+              Payment Required for Online Consultations
+            </p>
+            <p className="text-amber-700 text-sm">
+              Complete payment to receive your Zoom meeting link for online
+              appointments
+            </p>
+          </div>
+        </motion.div>
+      )}
+
+      <div className="mt-6 space-y-6">
         {appointments.map((item, index) => (
-          <div
+          <motion.div
             key={index}
-            className="grid grid-cols-[1fr_2fr] gap-4 sm:flex sm:gap-6 py-4 border-b"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: index * 0.1 }}
+            className="p-6 border border-gray-200 rounded-2xl shadow-sm bg-white hover:shadow-md transition-all duration-300 relative"
           >
-            <div>
-              <img
-                className="w-36 bg-[#EAEFFF]"
-                src={item.docData.image}
-                alt=""
-              />
+            {/* Status Badge */}
+            <div className="absolute -top-2 -right-2">
+              {item.cancelled ? (
+                <span className="bg-red-100 text-red-800 text-xs font-medium px-3 py-1 rounded-full border border-red-200">
+                  Cancelled
+                </span>
+              ) : item.isCompleted ? (
+                <span className="bg-green-100 text-green-800 text-xs font-medium px-3 py-1 rounded-full border border-green-200">
+                  Completed
+                </span>
+              ) : isAppointmentOngoing(item.slotDate, item.slotTime) ? (
+                item.consultationMode === "online" && item.payment ? (
+                  <span className="bg-purple-100 text-purple-800 text-xs font-medium px-3 py-1 rounded-full border border-purple-200 animate-pulse">
+                    Join Now
+                  </span>
+                ) : (
+                  <span className="bg-orange-100 text-orange-800 text-xs font-medium px-3 py-1 rounded-full border border-orange-200">
+                    Ongoing
+                  </span>
+                )
+              ) : isAppointmentUpcomingToday(item.slotDate, item.slotTime) ? (
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full border border-blue-200">
+                  Today
+                </span>
+              ) : parseSlotDate(item.slotDate) < new Date() ? (
+                <span className="bg-gray-100 text-gray-800 text-xs font-medium px-3 py-1 rounded-full border border-gray-200">
+                  Expired
+                </span>
+              ) : (
+                <span className="bg-blue-100 text-blue-800 text-xs font-medium px-3 py-1 rounded-full border border-blue-200">
+                  Upcoming
+                </span>
+              )}
             </div>
 
-            <div className="flex-1 text-sm text-[#5E5E5E]">
-              <p className="text-[#262626] text-base font-semibold">
-                {item.docData.name}
-              </p>
-              <p>{item.docData.speciality}</p>
-              <p className="text-[#464646] font-medium mt-1">Address:</p>
-              <p>{item.docData.address.line1}</p>
-              <p>{item.docData.address.line2}</p>
-              <p className="mt-1">
-                <span className="text-sm text-[#3C3C3C] font-medium">
-                  Date & Time:
-                </span>{" "}
-                {slotDateFormat(item.slotDate)} | {item.slotTime}
-              </p>
-              <p className="mt-1">
-                <span className="text-sm font-medium text-[#3C3C3C]">
-                  Consultation Mode:
-                </span>{" "}
-                {item.consultationMode === "online" ? "Online" : "Offline"}
-              </p>
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* Doctor Info */}
+              <div className="flex items-start gap-4 w-full md:w-2/5">
+                <img
+                  className="w-32 h-40 object-cover rounded-xl border-2 border-gray-100 bg-gray-50"
+                  src={item.docData.image}
+                  alt={item.docData.name}
+                  onError={(e) => {
+                    e.target.src = "/doctor-placeholder.png";
+                  }}
+                />
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                    {item.docData.name}
+                  </h3>
+                  <p className="text-sm text-primary font-medium mb-2">
+                    {item.docData.speciality}
+                  </p>
+                  <div className="text-xs text-gray-600 space-y-0.5">
+                    <p>{item.docData.address.line1}</p>
+                  </div>
+                </div>
+              </div>
 
-              {/* Show Zoom link if online & paid */}
-              {item.consultationMode === "online" &&
-                item.payment &&
-                item.zoomJoinUrl && (
-                  <div className="mt-2 text-green-600">
-                    ✅ Your Zoom meeting is ready:{" "}
-                    <a
-                      href={item.zoomJoinUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="underline text-blue-600"
+              {/* Appointment Details */}
+              <div className="flex-1 space-y-3">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {slotDateFormat(item.slotDate)} | {item.slotTime}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Video className="w-4 h-4 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Consultation:{" "}
+                    {item.consultationMode === "online" ? "Online" : "Offline"}
+                  </span>
+                </div>
+
+                {/* Payment Required Alert for Online Consultations */}
+                {item.consultationMode === "online" &&
+                  !item.payment &&
+                  !item.cancelled &&
+                  !item.isCompleted &&
+                  !successfulPayments.has(item._id) && (
+                    <div className="flex items-center gap-2 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <AlertCircle className="w-4 h-4 text-amber-600" />
+                      <span className="text-sm text-amber-700 font-medium">
+                        Payment required to get Zoom meeting link
+                      </span>
+                    </div>
+                  )}
+
+                {/* Zoom Meeting Ready - Enhanced for ongoing appointments */}
+                {item.consultationMode === "online" &&
+                  item.payment &&
+                  item.zoomJoinUrl && (
+                    <div
+                      className={`flex items-center gap-3 p-3 rounded-lg border ${
+                        isAppointmentOngoing(item.slotDate, item.slotTime)
+                          ? "bg-purple-50 border-purple-300 shadow-sm"
+                          : "bg-green-50 border-green-200"
+                      }`}
                     >
-                      Join Now
-                    </a>
+                      {isAppointmentOngoing(item.slotDate, item.slotTime) ? (
+                        <div className="flex-shrink-0 w-6 h-6 bg-purple-600 rounded-full flex items-center justify-center animate-pulse">
+                          <Video className="w-3 h-3 text-white" />
+                        </div>
+                      ) : (
+                        <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      )}
+                      <div className="flex-1">
+                        <span
+                          className={`text-sm font-medium ${
+                            isAppointmentOngoing(item.slotDate, item.slotTime)
+                              ? "text-purple-800"
+                              : "text-green-800"
+                          }`}
+                        >
+                          {isAppointmentOngoing(item.slotDate, item.slotTime)
+                            ? "Meeting is live now"
+                            : "Your Zoom meeting is ready"}
+                        </span>
+                        <a
+                          href={item.zoomJoinUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`block mt-1 text-sm font-semibold hover:opacity-80 ${
+                            isAppointmentOngoing(item.slotDate, item.slotTime)
+                              ? "text-purple-700 underline"
+                              : "text-green-700 underline"
+                          }`}
+                        >
+                          {isAppointmentOngoing(item.slotDate, item.slotTime)
+                            ? "Join Meeting Now →"
+                            : "Join Now →"}
+                        </a>
+                      </div>
+                    </div>
+                  )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex flex-col gap-3 min-w-[180px]">
+                {/* Chat Button */}
+                {(item.payment || successfulPayments.has(item._id)) &&
+                  !item.cancelled &&
+                  !item.isCompleted && (
+                    <button
+                      onClick={() => openChat(item)}
+                      className="flex items-center justify-center gap-2 border border-primary text-primary rounded-lg py-2.5 px-4 hover:bg-primary hover:text-white transition-all duration-200 font-medium"
+                    >
+                      <IoMdChatbubbles className="w-4 h-4" />
+                      Chat with Doctor
+                    </button>
+                  )}
+
+                {/* Payment Status */}
+                {successfulPayments.has(item._id) &&
+                  !item.cancelled &&
+                  !item.isCompleted && (
+                    <div className="py-2.5 px-4 border border-green-300 rounded-lg bg-green-50 text-green-700 text-center font-medium flex items-center justify-center gap-2">
+                      <CheckCircle className="w-4 h-4" />
+                      Payment Successful
+                    </div>
+                  )}
+
+                {/* Pay Online Button */}
+                {!item.cancelled &&
+                  !item.payment &&
+                  !item.isCompleted &&
+                  payment !== item._id &&
+                  !successfulPayments.has(item._id) && (
+                    <button
+                      onClick={() => setPayment(item._id)}
+                      className="border border-amber-500 text-amber-700 rounded-lg py-2.5 px-4 hover:bg-amber-500 hover:text-white transition-all duration-200 font-medium"
+                    >
+                      Pay Online
+                    </button>
+                  )}
+
+                {/* Payment Gateway Options */}
+                {!item.cancelled &&
+                  !item.payment &&
+                  !item.isCompleted &&
+                  payment === item._id &&
+                  !successfulPayments.has(item._id) && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-600 text-center mb-2">
+                        Choose payment method:
+                      </p>
+                      <button
+                        onClick={() => appointmentRazorpay(item._id, item)}
+                        className="w-full border border-gray-300 rounded-lg py-2.5 px-4 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <img
+                          className="h-5"
+                          src={assets.razorpay_logo}
+                          alt="Razorpay"
+                        />
+                      </button>
+                      <button
+                        onClick={() => appointmentStripe(item._id, item)}
+                        className="w-full border border-gray-300 rounded-lg py-2.5 px-4 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center gap-2"
+                      >
+                        <img
+                          className="h-5"
+                          src={assets.stripe_logo}
+                          alt="Stripe"
+                        />
+                      </button>
+                    </div>
+                  )}
+
+                {/* Paid Status */}
+                {!item.cancelled && item.payment && !item.isCompleted && (
+                  <div className="py-2.5 px-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-center font-medium">
+                    Paid
                   </div>
                 )}
-            </div>
 
-            <div className="flex flex-col gap-2 justify-end text-sm text-center">
-              {/* Chat button */}
-              {(item.payment || successfulPayments.has(item._id)) && !item.cancelled && !item.isCompleted && (
-                <button
-                  onClick={() => openChat(item)}
-                  className="flex items-center justify-center gap-2 border rounded py-2 hover:bg-primary hover:text-white transition-all duration-300"
-                >
-                  <IoMdChatbubbles /> Chat with Doctor
-                </button>
-              )}
-
-              {/* Payment Success Message (immediate feedback) */}
-              {successfulPayments.has(item._id) && !item.cancelled && !item.isCompleted && (
-                <div className="sm:min-w-48 py-2 border rounded bg-green-50 border-green-200 text-green-700">
-                  ✅ Payment Successful
-                </div>
-              )}
-
-              {/* Payment Buttons - Only show if not paid and not in successful payments */}
-              {!item.cancelled &&
-                !item.payment &&
-                !item.isCompleted &&
-                payment !== item._id &&
-                !successfulPayments.has(item._id) && (
-                  <button
-                    onClick={() => setPayment(item._id)}
-                    className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-primary hover:text-white transition-all duration-300"
-                  >
-                    Pay Online
-                  </button>
+                {/* Completed Status */}
+                {item.isCompleted && (
+                  <div className="py-2.5 px-4 border border-green-500 rounded-lg bg-green-50 text-green-700 text-center font-medium flex items-center justify-center gap-2">
+                    <CheckCircle className="w-4 h-4" />
+                    Completed
+                  </div>
                 )}
 
-              {!item.cancelled &&
-                !item.payment &&
-                !item.isCompleted &&
-                payment === item._id &&
-                !successfulPayments.has(item._id) && (
-                  <>
+                {/* Cancel Appointment */}
+                {!item.cancelled &&
+                  !item.isCompleted &&
+                  !successfulPayments.has(item._id) && (
                     <button
-                      onClick={() => appointmentRazorpay(item._id, item)}
-                      className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-gray-100 transition-all duration-300 flex items-center justify-center"
+                      onClick={() => cancelAppointment(item._id)}
+                      className="border border-red-500 text-red-600 rounded-lg py-2.5 px-4 hover:bg-red-500 hover:text-white transition-all duration-200 font-medium"
                     >
-                      <img
-                        className="max-w-20 max-h-5"
-                        src={assets.razorpay_logo}
-                        alt="Razorpay"
-                      />
+                      Cancel Appointment
                     </button>
+                  )}
 
-                    <button
-                      onClick={() => appointmentStripe(item._id, item)}
-                      className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-gray-100 transition-all duration-300 flex items-center justify-center"
-                    >
-                      <img
-                        className="max-w-20 max-h-5"
-                        src={assets.stripe_logo}
-                        alt="Stripe"
-                      />
-                    </button>
-                  </>
+                {/* Cancelled Status */}
+                {item.cancelled && (
+                  <div className="py-2.5 px-4 border border-red-300 rounded-lg bg-red-50 text-red-700 text-center font-medium">
+                    Appointment Cancelled
+                  </div>
                 )}
-
-              {/* Payment completed (from backend data) */}
-              {!item.cancelled && item.payment && !item.isCompleted && (
-                <button className="sm:min-w-48 py-2 border rounded text-[#696969] bg-[#EAEFFF]">
-                  Paid
-                </button>
-              )}
-
-              {/* Appointment completed */}
-              {item.isCompleted && (
-                <button className="sm:min-w-48 py-2 border border-green-500 rounded text-green-500">
-                  Completed
-                </button>
-              )}
-
-              {/* Cancel button */}
-              {!item.cancelled && !item.isCompleted && !successfulPayments.has(item._id) && (
-                <button
-                  onClick={() => cancelAppointment(item._id)}
-                  className="text-[#696969] sm:min-w-48 py-2 border rounded hover:bg-red-600 hover:text-white transition-all duration-300"
-                >
-                  Cancel appointment
-                </button>
-              )}
-              {item.cancelled && !item.isCompleted && (
-                <button className="sm:min-w-48 py-2 border border-red-500 rounded text-red-500">
-                  Appointment cancelled
-                </button>
-              )}
+              </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
-      {/* 💬 Chat Modal */}
       {chatOpen && (
-        <ChatWithDoctor appointment={selectedAppointment} isOpen={true} setChatOpen={setChatOpen} />
+        <ChatWithDoctor
+          appointment={selectedAppointment}
+          isOpen={true}
+          setChatOpen={setChatOpen}
+        />
       )}
     </div>
   );

@@ -73,22 +73,6 @@ const Banner = () => {
             </>
           )}
         </div>
-
-        {/* Trust indicators */}
-        <div className="flex flex-wrap justify-center md:justify-start gap-6 mt-8 text-white/80">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-sm">24/7 Availability</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-sm">Verified Doctors</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full"></div>
-            <span className="text-sm">Instant Confirmation</span>
-          </div>
-        </div>
       </div>
 
       {/* ------- Right Side ------- */}
