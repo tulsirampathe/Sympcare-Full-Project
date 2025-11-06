@@ -13,6 +13,7 @@ import chatMessageModel from "../models/chatMessageModel.js";
 
 // Gateway Initialize
 const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+
 const razorpayInstance = new razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
@@ -81,10 +82,10 @@ const loginWithGoogleUser = async (req, res) => {
 // API to register user
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, phone, email, password } = req.body;
 
     // checking for all data to register user
-    if (!name || !email || !password) {
+    if (!name || !phone || !email || !password) {
       return res.json({ success: false, message: "Missing Details" });
     }
 
@@ -110,6 +111,7 @@ const registerUser = async (req, res) => {
 
     const userData = {
       name,
+      phone,
       email,
       password: hashedPassword,
     };
@@ -341,10 +343,10 @@ const paymentRazorpay = async (req, res) => {
 // const paymentRazorpay = async (req, res) => {
 //     try {
 //         const { appointmentId } = req.body;
-//         console.log('Received appointmentId:', appointmentId);
+//         // console.log('Received appointmentId:', appointmentId);
 
 //         const appointmentData = await appointmentModel.findById(appointmentId);
-//         console.log('Fetched appointmentData:', appointmentData);
+//         // console.log('Fetched appointmentData:', appointmentData);
 
 //         if (!appointmentData || appointmentData.cancelled) {
 //             return res.json({ success: false, message: 'Appointment Cancelled or not found' });
@@ -361,20 +363,21 @@ const paymentRazorpay = async (req, res) => {
 //             receipt: String(appointmentId),
 //         };
 
-//         console.log('Razorpay order options:', options);
+//         // console.log('Razorpay order options:', options);
 
 //         const order = await razorpayInstance.orders.create(options);
-//         console.log('Created Razorpay order:', order);
+//         // console.log('Created Razorpay order:', order);
 
 //         res.json({ success: true, order });
 
 //     } catch (error) {
-//         console.error('Error during Razorpay order creation:', error);
+//         // console.error('Error during Razorpay order creation:', error);
 //         res.status(500).json({ success: false, message: error.message || 'Payment failed' });
 //     }
 // };
 
 // API to verify payment of razorpay
+
 
 const verifyRazorpay = async (req, res) => {
   try {
