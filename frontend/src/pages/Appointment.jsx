@@ -25,6 +25,7 @@ const Appointment = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [slotTime, setSlotTime] = useState("");
   const [consultationMode, setConsultationMode] = useState("offline");
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -87,7 +88,7 @@ const Appointment = () => {
 
   const bookAppointment = async () => {
     if (!token) {
-      toast.warning("Login to book an appointment");
+      toast.warning("Please login to book an appointment");
       return navigate("/login");
     }
 
@@ -99,7 +100,7 @@ const Appointment = () => {
     if (!userData || !isValidPhoneNumber(userData.phone)) {
       toast.error(
         <div>
-          Your phone number seems invalid.
+          Invalid phone number.
           <br />
           <Link
             to="/my-profile"
@@ -109,7 +110,10 @@ const Appointment = () => {
           </Link>{" "}
           to update it.
         </div>,
-        { autoClose: 6000 } // optional: closes after 6s
+        {
+          autoClose: 6000,
+          closeButton: true,
+        }
       );
       return;
     }
@@ -120,6 +124,11 @@ const Appointment = () => {
     const slotDate = `${day}_${month}_${year}`;
 
     try {
+      setLoading(true);
+
+      // ⏳ Create a loading toast (correct syntax for react-toastify)
+      const toastId = toast.loading("Booking your appointment, please wait...");
+
       const { data } = await axios.post(
         `${backendUrl}/api/user/book-appointment`,
         { docId, slotDate, slotTime, consultationMode },
@@ -127,7 +136,15 @@ const Appointment = () => {
       );
 
       if (data.success) {
-        toast.success(data.message);
+        // ✅ Update the loading toast to success
+        toast.update(toastId, {
+          render: "✅ Appointment booked successfully!",
+          type: "success",
+          isLoading: false,
+          autoClose: 2500,
+          closeButton: true,
+        });
+
         getDoctosData();
         navigate("/my-appointments");
 
@@ -140,7 +157,7 @@ const Appointment = () => {
 
 Hello ${user.name},
 
-Your appointment with *Dr. ${doctor.name}* has been successfully booked.
+Your appointment with *${doctor.name}* has been successfully booked.
 
 📅 *Date:* ${formattedDate}
 🕒 *Time:* ${appointment.slotTime}
@@ -161,16 +178,36 @@ ${
 Stay healthy,
 Team *SympCare*`;
 
-        await axios.post("http://localhost:4000/api/whatsapp/send-message", {
-          type: "appointment",
-          number: user.phone,
-          message,
-        });
+        // Send WhatsApp message (fire and forget - don't await if not critical)
+        axios
+          .post("http://localhost:4000/api/whatsapp/send-message", {
+            type: "appointment",
+            number: user.phone,
+            message,
+          })
+          .catch((error) => {
+            console.error("Failed to send WhatsApp message:", error);
+            // Don't show error to user for WhatsApp failure
+          });
       } else {
-        toast.error(data.message);
+        // ❌ Update loading toast to error
+        toast.update(toastId, {
+          render: data.message || "Failed to book appointment.",
+          type: "error",
+          isLoading: false,
+          autoClose: 3000,
+          closeButton: true,
+        });
       }
     } catch (error) {
-      toast.error(error.message);
+      console.log(error);
+
+      // ⚠️ Show error toast (no need to update if we don't have toastId)
+      toast.error("Something went wrong. Please try again later.", {
+        autoClose: 3000,
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -306,9 +343,14 @@ Team *SympCare*`;
           <div className="flex justify-center">
             <button
               onClick={bookAppointment}
-              className="bg-blue-600 text-white font-semibold px-10 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300"
+              disabled={loading}
+              className={`${
+                loading
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700"
+              } text-white font-semibold px-10 py-3 rounded-full transition-all duration-300`}
             >
-              Book Appointment
+              {loading ? "Booking..." : "Book Appointment"}
             </button>
           </div>
         </div>

@@ -10,6 +10,7 @@ const Login = () => {
   const [state, setState] = useState("Sign Up");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState(""); // ✅ Added phone state
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -25,13 +26,18 @@ const Login = () => {
     if (!validateEmail(email))
       return toast.error("Please enter a valid email address");
 
+    if (state === "Sign Up" && phone.trim().length !== 10)
+      return toast.error("Please enter a valid 10-digit phone number");
+
     setLoading(true);
     try {
       const url = `${backendUrl}/api/user/${
         state === "Sign Up" ? "register" : "login"
       }`;
       const payload =
-        state === "Sign Up" ? { name, email, password } : { email, password };
+        state === "Sign Up"
+          ? { name, email, phone, password } // ✅ Include phone in register
+          : { email, password };
 
       const { data } = await axios.post(url, payload);
       if (data.success) {
@@ -106,20 +112,43 @@ const Login = () => {
           Please {state === "Sign Up" ? "sign up" : "log in"} to continue
         </p>
 
+        {/* ✅ Full Name field (Sign Up only) */}
         {state === "Sign Up" && (
-          <div className="mb-4">
-            <label className="block text-sm text-gray-600 mb-1">Full Name</label>
-            <input
-              type="text"
-              placeholder="Enter your name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
-              required
-            />
-          </div>
+          <>
+            <div className="mb-4">
+              <label className="block text-sm text-gray-600 mb-1">
+                Full Name
+              </label>
+              <input
+                type="text"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                required
+              />
+            </div>
+
+            {/* ✅ Phone Number Field */}
+            <div className="mb-4">
+              <label className="block text-sm text-gray-600 mb-1">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                placeholder="Enter your 10-digit phone number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 outline-none"
+                pattern="[0-9]{10}"
+                maxLength="10"
+                required
+              />
+            </div>
+          </>
         )}
 
+        {/* Email Field */}
         <div className="mb-4">
           <label className="block text-sm text-gray-600 mb-1">Email</label>
           <input
@@ -132,6 +161,7 @@ const Login = () => {
           />
         </div>
 
+        {/* Password Field */}
         <div className="mb-4">
           <label className="block text-sm text-gray-600 mb-1">Password</label>
           <input

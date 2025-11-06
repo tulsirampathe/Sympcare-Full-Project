@@ -119,7 +119,7 @@ Hello ${userData.name},
 
 Your payment of ₹${order.amount / 100} was successful.
 
-📅 *Appointment With:* Dr. ${doc.name}
+📅 *Appointment With:* ${doc.name}
 🎓 *Specialization:* ${doc.speciality}
 📍 *Mode:* Online (Zoom)
 🗓️ *Date:* ${appointmentDate}
