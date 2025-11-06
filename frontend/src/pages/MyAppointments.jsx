@@ -255,24 +255,53 @@ Thank you for choosing *SympCare* 💚`;
 
     return timeDifference >= 0 && timeDifference <= thirtyMinutes;
   };
+
   // Helper function to check if appointment is upcoming today
   const isAppointmentUpcomingToday = (slotDate, slotTime) => {
-    const [day, month, year] = slotDate.split("_").map(Number);
-    const [time, modifier] = slotTime.split(" ");
-    let [hours, minutes] = time.split(":").map(Number);
+    try {
+      const [day, month, year] = slotDate.split("_").map(Number);
+      let [time, modifier] = slotTime.split(" ");
 
-    // Convert to 24-hour format
-    if (modifier === "PM" && hours !== 12) hours += 12;
-    if (modifier === "AM" && hours === 12) hours = 0;
+      // Trim whitespace (important!)
+      time = time.trim();
+      modifier = modifier.trim().toUpperCase();
 
-    const appointmentDateTime = new Date(year, month - 1, day, hours, minutes);
-    const now = new Date();
+      let [hours, minutes] = time.split(":").map(Number);
 
-    // Check if it's today and appointment time is in the future
-    return (
-      appointmentDateTime.toDateString() === now.toDateString() &&
-      appointmentDateTime > now
-    );
+      if (modifier === "PM" && hours !== 12) hours += 12;
+      if (modifier === "AM" && hours === 12) hours = 0;
+
+      const appointmentDateTime = new Date(
+        year,
+        month - 1,
+        day,
+        hours,
+        minutes
+      );
+      const now = new Date();
+
+      console.log(
+        "appointment date: ",
+        appointmentDateTime,
+        "and now date : ",
+        now
+      );
+
+      const isToday =
+        appointmentDateTime.getFullYear() === now.getFullYear() &&
+        appointmentDateTime.getMonth() === now.getMonth() &&
+        appointmentDateTime.getDate() === now.getDate();
+
+      console.log(
+        "Comparison Result:",
+        isToday && appointmentDateTime.getTime() > now.getTime()
+      );
+
+      return isToday && appointmentDateTime.getTime() > now.getTime();
+    } catch (err) {
+      console.error("Error parsing date/time:", err);
+      return false;
+    }
   };
 
   useEffect(() => {
