@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState } from "react";
 import { assets } from "../assets/assets";
-import { diseaseInfo, symptomsList } from "../data/data";
+import { diseaseInfo, symptomsList, ndiseaseInfo, newsymptomsList } from "../data/data";
 
 
 const API_KEY_PIXABAY = "49856975-b50f4f2288e42fd6f79dc9c5d";
@@ -44,7 +44,7 @@ const SymptomAnalysis = () => {
       });
 
       const predictedDisease = response.data["Most Accurate Disease"];
-      const diseaseDetails = diseaseInfo[predictedDisease];
+      const diseaseDetails = ndiseaseInfo[predictedDisease];
       setPrediction(diseaseDetails);
       getLocationAndFetch();
     } catch (err) {
@@ -129,7 +129,7 @@ const SymptomAnalysis = () => {
                   onChange={(e) => handleChange(i, e.target.value)}
                 >
                   <option value="">Select a symptom</option>
-                  {symptomsList.map((s, idx) => (
+                  {newsymptomsList.map((s, idx) => (
                     <option key={idx} value={s}>
                       {s.replace(/_/g, " ")}
                     </option>

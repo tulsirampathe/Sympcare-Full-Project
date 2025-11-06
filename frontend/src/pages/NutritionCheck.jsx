@@ -7,8 +7,8 @@ const NutritionCheck = () => {
   const [deficiencyInfo, setDeficiencyInfo] = useState(null);
   const [error, setError] = useState(null);
   const [foodHerbImages, setFoodHerbImages] = useState({});
-  const [GEMINI_API_KEY, setGEMINI_API_KEY] = useState("AIzaSyBcTNHUHz6DHIULzqGcDFXRxp0ZXPXxeCw"); 
-  const [API_KEY_PIXABAY, setAPI_KEY_PIXABAY] = useState("49856975-b50f4f2288e42fd6f79dc9c5d"); 
+  const [GEMINI_API_KEY, setGEMINI_API_KEY] = useState("AIzaSyBLocL5Fuw-wC5i8zAOD7aUOqqwrs2VRgU");
+  const [API_KEY_PIXABAY, setAPI_KEY_PIXABAY] = useState("49856975-b50f4f2288e42fd6f79dc9c5d");
 
   const predefinedSymptoms = [
     "Hair fall", "Brittle nails", "Fatigue", "Dry skin", "Weak immunity",
@@ -75,7 +75,7 @@ const NutritionCheck = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            contents: [{ parts: [{ text: prompt }] }], 
+            contents: [{ parts: [{ text: prompt }] }],
             generationConfig: { temperature: 0.7 },
           }),
         }
@@ -163,9 +163,18 @@ const NutritionCheck = () => {
         </div>
       ) : deficiencyInfo && (
         <div className="mt-16 bg-white p-8 rounded-lg shadow-lg">
-          <h2 className="text-3xl font-bold text-center mb-10">
+          <h2 className="text-4xl font-extrabold text-center mb-6">
             <span className="text-green-600">Deficiency</span> Information
           </h2>
+
+          <p className="text-sm text-center italic mb-8 text-red-600">
+            ⚠️ Note: Images are for reference only and may not be
+            <span className="font-bold bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent animate-pulse">
+              100%
+            </span> accurate.
+          </p>
+
+
 
           {/* Deficiency Details */}
           {deficiencyInfo.deficiencies.map((deficiency, index) => (
