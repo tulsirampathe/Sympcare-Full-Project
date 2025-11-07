@@ -10,7 +10,7 @@ The Health Prediction System is a powerful tool designed to predict skin disease
 2. **Disease Prediction from Symptoms**
 3. **Mental Health Prediction**
 4. **Role-Based Mental Health Check**
-5. **Health Chatbot for Queries**
+5. **Health Chatbot for Queries/**
 
 ---
 
