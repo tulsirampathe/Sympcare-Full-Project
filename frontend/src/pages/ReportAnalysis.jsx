@@ -11,9 +11,11 @@ import {
 
 const ReportAnalysis = () => {
   const [file, setFile] = useState(null);
-  const [summary, setSummary] = useState("");
+  const [summary, setSummary] = useState(
+    "*Maintain a healthy weight*: Excess body fat can lead to chronic inflammation, which may worsen anemia or other conditions"
+  );
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [showResult, setShowResult] = useState(false);
+  const [showResult, setShowResult] = useState(true);
   const [messages, setMessages] = useState([
     {
       sender: "bot",
@@ -25,6 +27,7 @@ const ReportAnalysis = () => {
   const [isListening, setIsListening] = useState(false);
   const messagesEndRef = useRef(null);
   const recognition = useRef(null);
+  const [images, setImages] = useState([]);
 
   useEffect(() => {
     if (window.SpeechRecognition || window.webkitSpeechRecognition) {
@@ -117,11 +120,6 @@ const ReportAnalysis = () => {
     }
   };
 
-  useEffect(() => {
-    if (messagesEndRef.current)
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isThinking]);
-
   return (
     <section className="px-6 py-20 max-w-5xl mx-auto">
       {/* Header */}
@@ -183,58 +181,63 @@ const ReportAnalysis = () => {
         </motion.div>
       )}
 
-      {/* Result Section */}
       {showResult && (
-        <>
-          {/* Summary */}
+        <div className="flex flex-col lg:flex-row gap-8 mt-10">
+          {/* Summary Section */}
           <motion.div
-            className="bg-blue-50 border border-blue-200 p-6 rounded-2xl shadow mt-10"
+            className="bg-blue-50 border border-blue-200 p-6 rounded-2xl shadow flex-1 max-h-[500px] overflow-y-auto"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
             <h3 className="text-xl font-bold text-blue-700 mb-3">
               🧾 AI Summary
             </h3>
-            <ReactMarkdown className="prose text-gray-700">
-              {summary}
-            </ReactMarkdown>
+            <ReactMarkdown>{summary}</ReactMarkdown>
           </motion.div>
 
           {/* Chat Section */}
           <motion.div
-            className="mt-12 bg-white rounded-3xl shadow-lg border border-gray-200 p-6 flex flex-col h-[500px]"
+            className="bg-white rounded-3xl shadow-lg border border-gray-200 p-6 flex flex-col h-[500px] flex-1"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <div className="flex-1 overflow-y-auto bg-blue-50 p-4 rounded-2xl space-y-3">
+            {/* Messages Area */}
+            <div className="flex-1 overflow-y-auto bg-blue-50 p-4 rounded-2xl flex flex-col space-y-3">
               {messages.map((msg, index) => (
-                <motion.div
+                <div
                   key={index}
-                  className={`max-w-xs p-3 rounded-lg shadow-md whitespace-pre-wrap ${
-                    msg.sender === "bot"
-                      ? "bg-blue-600 text-white self-start"
-                      : "bg-blue-400 text-white self-end"
+                  className={`flex w-full ${
+                    msg.sender === "bot" ? "justify-start" : "justify-end"
                   }`}
                 >
-                  {msg.sender === "bot" ? (
-                    <ReactMarkdown>{msg.text}</ReactMarkdown>
-                  ) : (
-                    msg.text
-                  )}
-                </motion.div>
+                  <div
+                    className={`max-w-[80%] p-3 rounded-2xl shadow-md break-words ${
+                      msg.sender === "bot"
+                        ? "bg-blue-600 text-white rounded-bl-none"
+                        : "bg-blue-400 text-white rounded-br-none"
+                    }`}
+                  >
+                    {msg.sender === "bot" ? (
+                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    ) : (
+                      msg.text
+                    )}
+                  </div>
+                </div>
               ))}
 
+              {/* Typing Indicator */}
               {isThinking && (
-                <div className="self-start flex space-x-1 p-2">
-                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.6s]"></span>
+                <div className="flex justify-start space-x-1 p-2">
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.2s]" />
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.4s]" />
+                  <span className="w-2 h-2 bg-blue-400 rounded-full animate-bounce [animation-delay:0.6s]" />
                 </div>
               )}
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input */}
+            {/* Input Section */}
             <div className="p-3 border-t bg-white flex items-center space-x-2">
               <textarea
                 rows="1"
@@ -271,20 +274,59 @@ const ReportAnalysis = () => {
                 <FaPaperPlane />
               </button>
             </div>
+
+            {/* 🩺 Lifestyle Button */}
+            <div className="mt-3 flex justify-center">
+              <button
+                onClick={() =>
+                  sendMessage("can you give Get Lifestyle Recommendations")
+                }
+                className="bg-green-600 text-white px-6 py-2 rounded-xl shadow-md hover:bg-green-700 transition-all"
+              >
+                🌿 Get Lifestyle Recommendations
+              </button>
+            </div>
           </motion.div>
 
-          <div className="text-center mt-10">
-            <button
-              onClick={() => {
-                setShowResult(false);
-                setFile(null);
-              }}
-              className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition"
-            >
-              Upload Another Report
-            </button>
-          </div>
-        </>
+          {/* 🖼️ Dynamic Image Section */}
+          <motion.div
+            className="bg-white rounded-2xl shadow-lg border border-gray-200 p-4 flex flex-col flex-1 max-h-[500px] overflow-y-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <h3 className="text-xl font-bold text-blue-700 mb-3">
+              📸 Related Images
+            </h3>
+            {images && images.length > 0 ? (
+              <div className="grid grid-cols-2 gap-3">
+                {images.map((img, index) => (
+                  <img
+                    key={index}
+                    src={img}
+                    alt={`Result ${index + 1}`}
+                    className="rounded-xl shadow-md object-cover w-full h-32 hover:scale-105 transition-transform"
+                  />
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center">No images available</p>
+            )}
+          </motion.div>
+        </div>
+      )}
+
+      {showResult && (
+        <div className="text-center mt-10">
+          <button
+            onClick={() => {
+              setShowResult(false);
+              setFile(null);
+            }}
+            className="bg-blue-600 text-white px-8 py-3 rounded-xl hover:bg-blue-700 transition"
+          >
+            Upload Another Report
+          </button>
+        </div>
       )}
     </section>
   );
