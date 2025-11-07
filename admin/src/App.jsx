@@ -15,6 +15,8 @@ import DoctorAppointments from "./pages/Doctor/DoctorAppointments";
 import DoctorDashboard from "./pages/Doctor/DoctorDashboard";
 import DoctorProfile from "./pages/Doctor/DoctorProfile";
 import Chatbot from "./components/Chatbot";
+import DrugDiseaseChat from "./components/DrugDiseaseChat";
+import DrugIntraction from "./components/DrugIntraction";
 
 const App = () => {
   const { dToken } = useContext(DoctorContext);
@@ -36,6 +38,7 @@ const App = () => {
           <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
           <Route path="/doctor-appointments" element={<DoctorAppointments />} />
           <Route path="/doctor-profile" element={<DoctorProfile />} />
+          <Route path="/doctor-d" element={<DrugIntraction />} />
         </Routes>
 
         {dToken && <Chatbot />}
